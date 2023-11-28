@@ -1,8 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -71,8 +71,9 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.48.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.45")
+    val hiltVersion = "2.48.1"
+    implementation("com.google.dagger:hilt-android:$hiltVersion")
+    ksp("com.google.dagger:hilt-android-compiler:$hiltVersion")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
@@ -80,9 +81,4 @@ dependencies {
 
     // UI Tests
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-}
-
-// Allow references to generated code (Hilt needs it)
-kapt {
-    correctErrorTypes = true
 }
