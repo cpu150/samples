@@ -46,8 +46,12 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.4"
+    }
     buildFeatures {
         buildConfig = true
+        compose = true
     }
     @Suppress("UnstableApiUsage")
     testOptions {
@@ -71,9 +75,24 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
 
     // Hilt
-    val hiltVersion = "2.48.1"
-    implementation("com.google.dagger:hilt-android:$hiltVersion")
-    ksp("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    val hiltVer = "2.48.1"
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("com.google.dagger:hilt-android:$hiltVer")
+    ksp("com.google.dagger:hilt-android-compiler:$hiltVer")
+
+    // Compose
+    val composeNavVer = "2.7.5"
+    implementation("androidx.compose.material3:material3:1.1.2")
+    implementation("androidx.navigation:navigation-compose:$composeNavVer")
+
+    // Compose optional - Integration with lifecycle
+    val composeOptionalVer = "2.6.2"
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:$composeOptionalVer")
+
+    // Android Studio Preview support
+    val toolingVer = "1.5.4"
+    implementation("androidx.compose.ui:ui-tooling-preview:$toolingVer")
+    debugImplementation("androidx.compose.ui:ui-tooling:$toolingVer")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
