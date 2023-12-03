@@ -1,3 +1,5 @@
+import java.io.ByteArrayOutputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -5,8 +7,24 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+val runCommand: (project: Project, cmd: String) -> String = { project: Project, cmd: String ->
+    val byteOut = ByteArrayOutputStream()
+    project.exec {
+        commandLine = cmd.split(" ")
+        standardOutput = byteOut
+    }
+    String(byteOut.toByteArray()).trim()
+}
+
 android {
     val signingConfigName = "debug"
+    val gitBranch = runCommand(project, "git rev-parse --abbrev-ref HEAD")
+        .takeIf { it.isNotBlank() } ?: "no_branch"
+    val gitTag = runCommand(project, "git tag -l --points-at HEAD")
+        .takeIf { it.isNotBlank() } ?: "no_tag"
+    val gitHash = runCommand(project, "git rev-parse --short=8 HEAD")
+        .takeIf { it.isNotBlank() } ?: "no_hash"
+    val gitRevCount = runCommand(project, "git rev-list --count HEAD").toIntOrNull() ?: -1
 
     namespace = "com.example.example2023"
     compileSdk = 34
@@ -15,7 +33,7 @@ android {
         applicationId = "com.example.example2023"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
+        versionCode = gitRevCount
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -49,11 +67,13 @@ android {
     }
     flavorDimensions += "environment"
     productFlavors {
+        val commonNameSuffix = "$gitBranch.$gitTag.$gitHash"
+
         create("dev") {
             dimension = "environment"
             signingConfig = signingConfigs.getByName(signingConfigName)
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev ($commonNameSuffix)"
             resValue("string", "app_name", "Example 2023 dev")
             buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
         }
@@ -61,7 +81,7 @@ android {
             dimension = "environment"
             signingConfig = signingConfigs.getByName(signingConfigName)
             applicationIdSuffix = ".qa"
-            versionNameSuffix = "-qa"
+            versionNameSuffix = "-qa ($commonNameSuffix)"
             matchingFallbacks += "debug"
             resValue("string", "app_name", "Example 2023 QA")
             buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
