@@ -6,6 +6,8 @@ plugins {
 }
 
 android {
+    val signingConfigName = "debug"
+
     namespace = "com.example.example2023"
     compileSdk = 34
 
@@ -19,26 +21,58 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        getByName(signingConfigName) {
+            keyAlias = "localSigning"
+            keyPassword = "Password"
+            storeFile = file("../app/certificates/localSigning.keystore")
+            storePassword = "Password"
+        }
+    }
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
             isDebuggable = true
-            isMinifyEnabled = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             enableUnitTestCoverage = true
             enableAndroidTestCoverage = true
-            buildConfigField("String", "BASE_URL", "\"https://example.com/\"")
         }
         release {
             isDebuggable = false
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"https://example.com/\"")
         }
     }
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            signingConfig = signingConfigs.getByName(signingConfigName)
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            resValue("string", "app_name", "Example 2023 dev")
+            buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
+        }
+        create("qa") {
+            dimension = "environment"
+            signingConfig = signingConfigs.getByName(signingConfigName)
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            matchingFallbacks += "debug"
+            resValue("string", "app_name", "Example 2023 QA")
+            buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
+
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -66,7 +100,7 @@ android {
 dependencies {
     // Ktx
     implementation("androidx.core:core-ktx:1.12.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     // Android
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -75,7 +109,7 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
 
     // Hilt
-    val hiltVer = "2.48.1"
+    val hiltVer = "2.49"
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     implementation("com.google.dagger:hilt-android:$hiltVer")
     ksp("com.google.dagger:hilt-android-compiler:$hiltVer")
