@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.io.ByteArrayOutputStream
 
 plugins {
@@ -35,6 +36,10 @@ android {
         targetSdk = 34
         versionCode = gitRevCount
         versionName = "1.0"
+
+        val projectName = applicationId?.split(".")?.last() ?: "no_project_name"
+        archivesName =
+            "$projectName-$versionName-$versionCode-$gitHash-${gitBranch.replace("/", "_")}"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
