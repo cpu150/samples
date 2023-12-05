@@ -2,10 +2,11 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.io.ByteArrayOutputStream
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt.android.plugin)
+    alias(libs.plugins.kps)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 val runCommand: (project: Project, cmd: String) -> String = { project: Project, cmd: String ->
@@ -26,14 +27,19 @@ android {
     val gitHash = runCommand(project, "git rev-parse --short=8 HEAD")
         .takeIf { it.isNotBlank() } ?: "no_hash"
     val gitRevCount = runCommand(project, "git rev-list --count HEAD").toIntOrNull() ?: -1
+    val prodProguardFiles = listOf(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro",
+        "proguard-serializable-rules.pro",
+    ).toTypedArray()
 
     namespace = "com.example.example2023"
-    compileSdk = 34
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "com.example.example2023"
-        minSdk = 26
-        targetSdk = 34
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = gitRevCount
         versionName = "1.0"
 
@@ -64,37 +70,47 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
     flavorDimensions += "environment"
     productFlavors {
-        val commonNameSuffix = "$gitBranch.$gitTag.$gitHash"
+        val commonVersionNameSuffix = "$gitBranch.$gitTag.$gitHash"
+        val randomUserApiVer = "1.4"
 
         create("dev") {
             dimension = "environment"
             signingConfig = signingConfigs.getByName(signingConfigName)
             applicationIdSuffix = ".dev"
-            versionNameSuffix = "-dev ($commonNameSuffix)"
+            versionNameSuffix = "-dev ($commonVersionNameSuffix)"
             resValue("string", "app_name", "Example 2023 dev")
-            buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
+            buildConfigField(
+                "String",
+                "RANDOM_USER_BASE_URL",
+                "\"https://randomuser.me/api/$randomUserApiVer/\""
+            )
         }
         create("qa") {
             dimension = "environment"
             signingConfig = signingConfigs.getByName(signingConfigName)
             applicationIdSuffix = ".qa"
-            versionNameSuffix = "-qa ($commonNameSuffix)"
+            versionNameSuffix = "-qa ($commonVersionNameSuffix)"
             matchingFallbacks += "debug"
+            proguardFiles(*(prodProguardFiles + "proguard-rules-qa.pro"))
             resValue("string", "app_name", "Example 2023 QA")
-            buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
-
+            buildConfigField(
+                "String",
+                "RANDOM_USER_BASE_URL",
+                "\"https://randomuser.me/api/$randomUserApiVer/\""
+            )
         }
         create("prod") {
             dimension = "environment"
-            buildConfigField("String", "RANDOM_USER_BASE_URL", "\"https://randomuser.me/api/1.2/\"")
+            proguardFiles(*prodProguardFiles)
+            buildConfigField(
+                "String",
+                "RANDOM_USER_BASE_URL",
+                "\"https://randomuser.me/api/$randomUserApiVer/\""
+            )
         }
     }
 
@@ -106,7 +122,7 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
     buildFeatures {
         buildConfig = true
@@ -124,39 +140,47 @@ android {
 
 dependencies {
     // Ktx
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation(libs.androidx.core.ktx)
 
     // Android
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation(libs.androidx.appcompat)
 
     // Material Design
-    implementation("com.google.android.material:material:1.10.0")
+    implementation(libs.android.material)
 
     // Hilt
-    val hiltVer = "2.49"
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-    implementation("com.google.dagger:hilt-android:$hiltVer")
-    ksp("com.google.dagger:hilt-android-compiler:$hiltVer")
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.hilt.navigation.compose)
 
     // Compose
-    val composeNavVer = "2.7.5"
-    implementation("androidx.compose.material3:material3:1.1.2")
-    implementation("androidx.navigation:navigation-compose:$composeNavVer")
+    implementation(libs.androidx.material3.compose)
+    implementation(libs.androidx.navigation.compose)
 
     // Compose optional - Integration with lifecycle
-    val composeOptionalVer = "2.6.2"
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:$composeOptionalVer")
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
-    // Android Studio Preview support
-    val toolingVer = "1.5.4"
-    implementation("androidx.compose.ui:ui-tooling-preview:$toolingVer")
-    debugImplementation("androidx.compose.ui:ui-tooling:$toolingVer")
+    // Compose Android Studio Preview support
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // Retrofit
+    implementation(libs.retrofit)
+
+    // Kotlin JSON serialization
+    implementation(libs.kotlinx.serialization.json)
+
+    // Kotlinx Serialization Converter
+    implementation(libs.serialization.converter)
+
+    // OkHttp
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.junit.android)
 
     // UI Tests
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(libs.test.ui.espresso)
 }
