@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Keep
 @Serializable
-data class GetRandomUsersAPI(
-    @SerialName("results") val results: List<RandomUserAPI>? = null,
-    @SerialName("info") val info: InfoRandomUserAPI? = null,
+data class GetRandomUsersDTO(
+    @SerialName("results") val results: List<RandomUserDTO>? = null,
+    @SerialName("info") val info: InfoRandomUserDTO? = null,
 )

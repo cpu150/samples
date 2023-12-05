@@ -6,9 +6,9 @@ import kotlinx.serialization.Serializable
 
 @Keep
 @Serializable
-data class RandomUserAPI(
-    @SerialName("name") val name: RandomUserNameAPI? = null,
+data class RandomUserDTO(
+    @SerialName("name") val name: RandomUserNameDTO? = null,
     @SerialName("email") val email: String? = null,
-    @SerialName("picture") val picture: RandomUserPictureAPI? = null,
+    @SerialName("picture") val picture: RandomUserPictureDTO? = null,
     @SerialName("gender") val gender: String? = null,
 )

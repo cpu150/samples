@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Keep
 @Serializable
-data class RandomUserPictureAPI(
+data class RandomUserPictureDTO(
     @SerialName("large") val large: String? = null,
     @SerialName("medium") val medium: String? = null,
     @SerialName("thumbnail") val thumbnail: String? = null,

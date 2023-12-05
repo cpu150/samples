@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Keep
 @Serializable
-data class InfoRandomUserAPI(
+data class InfoRandomUserDTO(
     @SerialName("seed") val seed: String? = null,
     @SerialName("results") val results: Int? = null,
     @SerialName("page") val page: Int? = null,
