@@ -31,6 +31,8 @@ android {
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro",
         "proguard-serializable-rules.pro",
+        "proguard-retrofit-rules.pro",
+        "proguard-room-rules.pro",
     ).toTypedArray()
 
     namespace = "com.example.example2023"
@@ -105,6 +107,7 @@ android {
         }
         create("prod") {
             dimension = "environment"
+            signingConfig = signingConfigs.getByName(signingConfigName)
             proguardFiles(*prodProguardFiles)
             buildConfigField(
                 "String",
