@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.io.ByteArrayOutputStream
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 plugins {
     alias(libs.plugins.android.application)
@@ -50,6 +52,10 @@ android {
             "$projectName-$versionName-$versionCode-$gitHash-${gitBranch.replace("/", "_")}"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm.ss")
+        val buildDate = LocalDateTime.now().format(formatter)
+        buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
     }
 
     signingConfigs {
@@ -60,6 +66,7 @@ android {
             storePassword = "Password"
         }
     }
+
     buildTypes {
         debug {
             isDebuggable = true
@@ -67,6 +74,7 @@ android {
             isShrinkResources = false
             enableUnitTestCoverage = true
             enableAndroidTestCoverage = true
+            isPseudoLocalesEnabled = true
         }
         release {
             isDebuggable = false
@@ -75,6 +83,7 @@ android {
             signingConfig = signingConfigs.getByName(signingConfigName)
         }
     }
+
     flavorDimensions += "environment"
     productFlavors {
         val commonVersionNameSuffix = "$gitBranch.$gitTag.$gitHash"
@@ -119,16 +128,25 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
+
+    hilt {
+        // When the project has several modules and not all included in 'app' module
+        enableAggregatingTask = true
+    }
+
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
+
     buildFeatures {
         buildConfig = true
         compose = true
     }
+
     @Suppress("UnstableApiUsage")
     testOptions {
         animationsDisabled = true
