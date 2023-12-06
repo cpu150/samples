@@ -72,6 +72,7 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName(signingConfigName)
         }
     }
     flavorDimensions += "environment"
@@ -81,7 +82,6 @@ android {
 
         create("dev") {
             dimension = "environment"
-            signingConfig = signingConfigs.getByName(signingConfigName)
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev ($commonVersionNameSuffix)"
             resValue("string", "app_name", "Example 2023 dev")
@@ -93,7 +93,6 @@ android {
         }
         create("qa") {
             dimension = "environment"
-            signingConfig = signingConfigs.getByName(signingConfigName)
             applicationIdSuffix = ".qa"
             versionNameSuffix = "-qa ($commonVersionNameSuffix)"
             matchingFallbacks += "debug"
@@ -107,7 +106,6 @@ android {
         }
         create("prod") {
             dimension = "environment"
-            signingConfig = signingConfigs.getByName(signingConfigName)
             proguardFiles(*prodProguardFiles)
             buildConfigField(
                 "String",
