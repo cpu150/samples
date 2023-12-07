@@ -86,6 +86,8 @@ android {
 
     flavorDimensions += "environment"
     productFlavors {
+        val appName = "Ex 2023"
+        val appNameKey = "app_name"
         val commonVersionNameSuffix = "$gitBranch.$gitTag.$gitHash"
         val randomUserApiVer = "1.4"
 
@@ -93,7 +95,7 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev ($commonVersionNameSuffix)"
-            resValue("string", "app_name", "Example 2023 dev")
+            resValue("string", appNameKey, "$appName Dev")
             buildConfigField(
                 "String",
                 "RANDOM_USER_BASE_URL",
@@ -106,7 +108,7 @@ android {
             versionNameSuffix = "-uat ($commonVersionNameSuffix)"
             matchingFallbacks += "debug"
             proguardFiles(*(prodProguardFiles + "proguard-rules-uat.pro"))
-            resValue("string", "app_name", "Example 2023 UAT")
+            resValue("string", appNameKey, "$appName UAT")
             buildConfigField(
                 "String",
                 "RANDOM_USER_BASE_URL",
@@ -116,6 +118,7 @@ android {
         create("prod") {
             dimension = "environment"
             proguardFiles(*prodProguardFiles)
+            resValue("string", appNameKey, appName)
             buildConfigField(
                 "String",
                 "RANDOM_USER_BASE_URL",
@@ -157,9 +160,7 @@ android {
     }
 }
 
-val uatImplementation by configurations
-val devImplementation by configurations
-val prodDebugImplementation: Configuration by configurations.creating
+val debugImplementation by configurations
 
 dependencies {
     // Ktx
@@ -201,9 +202,7 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     // Leakcanary
-    uatImplementation(libs.leakcanary)
-    devImplementation(libs.leakcanary)
-    prodDebugImplementation(libs.leakcanary)
+    debugImplementation(libs.leakcanary)
 
     // Tests
     testImplementation(libs.test.junit)
