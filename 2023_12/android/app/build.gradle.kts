@@ -141,6 +141,19 @@ android {
         enableAggregatingTask = true
     }
 
+    val roomSchemaPath = "$projectDir/roomschemas"
+
+    ksp {
+        arg("room.schemaLocation", roomSchemaPath)
+        arg("room.incremental", "true")
+        arg("room.expandProjection", "true")
+    }
+
+    sourceSets {
+        // Add schema as test assets
+        getByName("androidTest").assets.srcDir(roomSchemaPath)
+    }
+
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
@@ -160,7 +173,9 @@ android {
     }
 }
 
-val debugImplementation by configurations
+// Flavor's specific implementation
+//    val uatImplementation by configurations // Created by default
+//    val prodDebugImplementation: Configuration by configurations.creating // Not created by default
 
 dependencies {
     // Ktx
@@ -201,12 +216,21 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
 
+    // Room
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx.extension)
+
     // Leakcanary
     debugImplementation(libs.leakcanary)
 
     // Tests
     testImplementation(libs.test.junit)
     androidTestImplementation(libs.test.junit.android)
+
+    // Tests Room
+    testImplementation(libs.androidx.room.testing)
 
     // UI Tests
     androidTestImplementation(libs.test.ui.espresso)
