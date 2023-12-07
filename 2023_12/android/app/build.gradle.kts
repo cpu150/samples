@@ -157,6 +157,10 @@ android {
     }
 }
 
+val qaImplementation by configurations
+val devImplementation by configurations
+val prodDebugImplementation: Configuration by configurations.creating
+
 dependencies {
     // Ktx
     implementation(libs.androidx.core.ktx)
@@ -195,6 +199,11 @@ dependencies {
     // OkHttp
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+
+    // Leakcanary
+    qaImplementation(libs.leakcanary)
+    devImplementation(libs.leakcanary)
+    prodDebugImplementation(libs.leakcanary)
 
     // Tests
     testImplementation(libs.test.junit)
