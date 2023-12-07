@@ -100,13 +100,13 @@ android {
                 "\"https://randomuser.me/api/$randomUserApiVer/\""
             )
         }
-        create("qa") {
+        create("uat") {
             dimension = "environment"
-            applicationIdSuffix = ".qa"
-            versionNameSuffix = "-qa ($commonVersionNameSuffix)"
+            applicationIdSuffix = ".uat"
+            versionNameSuffix = "-uat ($commonVersionNameSuffix)"
             matchingFallbacks += "debug"
-            proguardFiles(*(prodProguardFiles + "proguard-rules-qa.pro"))
-            resValue("string", "app_name", "Example 2023 QA")
+            proguardFiles(*(prodProguardFiles + "proguard-rules-uat.pro"))
+            resValue("string", "app_name", "Example 2023 UAT")
             buildConfigField(
                 "String",
                 "RANDOM_USER_BASE_URL",
@@ -157,7 +157,7 @@ android {
     }
 }
 
-val qaImplementation by configurations
+val uatImplementation by configurations
 val devImplementation by configurations
 val prodDebugImplementation: Configuration by configurations.creating
 
@@ -201,7 +201,7 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     // Leakcanary
-    qaImplementation(libs.leakcanary)
+    uatImplementation(libs.leakcanary)
     devImplementation(libs.leakcanary)
     prodDebugImplementation(libs.leakcanary)
 
