@@ -1,7 +1,10 @@
-package com.example.data
+package com.example.data.randomuser.di
 
 import android.content.Context
-import com.example.data.randomuser.RandomUserEndpoint
+import com.example.data.randomuser.AuthenticationInterceptor
+import com.example.data.randomuser.Endpoints
+import com.example.data.randomuser.Mapper
+import com.example.data.randomuser.MapperImp
 import com.example.example2023.BuildConfig.RANDOM_USER_BASE_URL
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -33,7 +36,7 @@ annotation class JsonRetrofitConverter
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class RetrofitRandomUser
+annotation class RandomUser
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -57,10 +60,14 @@ object ApiModule {
         explicitNulls = false
     }
 
+    @Provides
+    @Singleton
+    fun provideJsonSerializer() = _jsonSerializer
+
     @JsonRetrofitConverter
     @Provides
     @Singleton
-    fun getRetrofitConverterFactory() = _jsonSerializer.asConverterFactory(contentTypeJson)
+    fun provideRetrofitConverterFactory() = _jsonSerializer.asConverterFactory(contentTypeJson)
 
     @Provides
     @Singleton
@@ -71,16 +78,20 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideCacheInterceptor() = Interceptor { chain ->
-        val response = chain.proceed(chain.request())
-
-        val cacheControl = CacheControl.Builder()
+        CacheControl.Builder()
             .maxAge(cacheMaxAge.inWholeMinutes.toInt(), TimeUnit.MINUTES)
-            .build()
-
-        response.newBuilder()
-            .header(HTTP_HEADER_CACHE_CONTROL, cacheControl.toString())
-            .build()
+            .build().toString()
+            .let { cacheControl ->
+                chain.proceed(chain.request()).newBuilder()
+                    .header(HTTP_HEADER_CACHE_CONTROL, cacheControl)
+                    .build()
+            }
     }
+
+    @RandomUser
+    @Provides
+    @Singleton
+    fun provideAuthenticatorInterceptor() = AuthenticationInterceptor()
 
     @Singleton
     @Provides
@@ -92,6 +103,7 @@ object ApiModule {
     fun provideOkHttpClient(
         cache: Cache,
         cacheInterceptor: Interceptor,
+        @RandomUser authenticationInterceptor: AuthenticationInterceptor,
         httpLoggingInterceptor: HttpLoggingInterceptor,
     ) = OkHttpClient.Builder()
         .connectTimeout(connectionTimeout.toJavaDuration())
@@ -99,10 +111,11 @@ object ApiModule {
         .writeTimeout(writeTimeout.toJavaDuration())
         .cache(cache)
         .addInterceptor(cacheInterceptor)
+        .addInterceptor(authenticationInterceptor)
         .addInterceptor(httpLoggingInterceptor)
         .build()
 
-    @RetrofitRandomUser
+    @RandomUser
     @Singleton
     @Provides
     fun provideRetrofitRandomUser(
@@ -117,6 +130,11 @@ object ApiModule {
     @Singleton
     @Provides
     fun provideMovieAPI(
-        @RetrofitRandomUser retrofit: Retrofit
-    ): RandomUserEndpoint = retrofit.create(RandomUserEndpoint::class.java)
+        @RandomUser retrofit: Retrofit,
+    ): Endpoints = retrofit.create(Endpoints::class.java)
+
+    @RandomUser
+    @Singleton
+    @Provides
+    fun provideMapper(): Mapper = MapperImp()
 }
