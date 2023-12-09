@@ -1,14 +1,16 @@
 # Getting Started
 
-`Ex 2023` Android application is an example to practice implementing features using some popular 3rd
-party libraries.
-It interfaces with the [Random User API](https://randomuser.me/) and displays the result as a list.
+`Ex 2023` Android application is an example.
+The purpose here is to practice implementing features using some popular 3rd party libraries while
+respecting Repository architecture principles.
+
+The app interfaces with [Random User API](https://randomuser.me/) and displays the result as a list.
 A user returned by the API can be saved locally and accessed offline.
 
 ## Libraries used
 
 * [Retrofit2](https://square.github.io/retrofit/)
-* [Picasso](http://square.github.io/picasso/)
+* [Coil](https://coil-kt.github.io/coil/)
 * [OkHttp3](http://square.github.io/okhttp/) (Cache + Logging)
 * [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
 * [Jetpack Compose](https://developer.android.com/jetpack/compose)
@@ -16,12 +18,12 @@ A user returned by the API can be saved locally and accessed offline.
 * [AndroidX](https://developer.android.com/jetpack/androidx/)
 * [Mockito](https://github.com/mockito/mockito) (Tests)
 
-## Gradle setup
+## Project setup
 
 * Proguard
 * Version catalog (using `libs.versions.toml` file)
 * `dev`, `uat` and `prod` environments
-* App icon, name, version and apk file name evironment specific
+* App icon, name, version and apk file name depending on the environment
 
 ## Android project
 
