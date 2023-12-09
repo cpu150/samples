@@ -1,4 +1,4 @@
-package com.example.data.randomuser.model
+package com.example.data.api.randomuser.model
 
 import androidx.annotation.Keep
 import kotlinx.serialization.SerialName

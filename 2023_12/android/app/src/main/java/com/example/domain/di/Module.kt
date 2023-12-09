@@ -1,6 +1,6 @@
 package com.example.domain.di
 
-import com.example.data.randomuser.RepositoryImp
+import com.example.data.api.randomuser.RepositoryImp
 import com.example.domain.randomuser.GetRandomUsersUseCase
 import com.example.domain.randomuser.GetRandomUsersUseCaseImp
 import com.example.domain.randomuser.RandomUserRepository

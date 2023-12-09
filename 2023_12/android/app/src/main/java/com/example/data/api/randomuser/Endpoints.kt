@@ -1,6 +1,6 @@
-package com.example.data.randomuser
+package com.example.data.api.randomuser
 
-import com.example.data.randomuser.model.GetRandomUsersDTO
+import com.example.data.api.randomuser.model.GetRandomUsersDTO
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Headers

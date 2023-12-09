@@ -1,12 +1,12 @@
-package com.example.data.randomuser
+package com.example.data.api.randomuser
 
-import com.example.data.randomuser.model.ErrorRandomUserDTO
-import com.example.domain.DataResponse
-import com.example.domain.DataResponse.ReasonCode.API_REQUEST
-import com.example.domain.DataResponse.ReasonCode.BODY_NULL
-import com.example.domain.DataResponse.ReasonCode.ERROR_BODY_DESERIALIZATION
-import com.example.domain.DataResponse.ReasonCode.ERROR_BODY_NULL
+import com.example.data.api.randomuser.model.ErrorRandomUserDTO
 import com.example.domain.randomuser.RandomUserRepository
+import com.example.domain.state.DataState
+import com.example.domain.state.DataState.ReasonCode.API_REQUEST
+import com.example.domain.state.DataState.ReasonCode.BODY_NULL
+import com.example.domain.state.DataState.ReasonCode.ERROR_BODY_DESERIALIZATION
+import com.example.domain.state.DataState.ReasonCode.ERROR_BODY_NULL
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,29 +29,34 @@ class RepositoryImp @Inject constructor(
         } catch (e: HttpException) {
             handleHttpError(e)
         } catch (e: Exception) {
-            DataResponse.Error(reason = API_REQUEST, ex = e)
+            DataState.Error(reason = API_REQUEST, ex = e)
         }
     }
 
     private fun <T, U> processResponse(
         response: Response<T>,
-        map: (dto: T) -> DataResponse<U>,
+        map: (dto: T) -> DataState<U>,
     ) = response.run {
         if (isSuccessful) {
             body()?.let { dto -> map(dto) }
-                ?: DataResponse.Error(reason = BODY_NULL, httpCode = code())
+                ?: DataState.Error(reason = BODY_NULL, httpCode = code())
         } else {
             errorBody()?.let { errorBody -> deserializedErrorBody(code(), errorBody) }
-                ?: DataResponse.Error(reason = ERROR_BODY_NULL, httpCode = code())
+                ?: DataState.Error(reason = ERROR_BODY_NULL, httpCode = code())
         }
     }
 
     private fun deserializedErrorBody(code: Int, errorBody: ResponseBody) = try {
         json.decodeFromString<ErrorRandomUserDTO>(errorBody.string())
-            .run { DataResponse.Error(httpCode = code, msg = error) }
+            .run { DataState.Error(httpCode = code, msg = error) }
     } catch (e: Exception) {
-        DataResponse.Error(reason = ERROR_BODY_DESERIALIZATION, httpCode = code, ex = e)
+        DataState.Error(reason = ERROR_BODY_DESERIALIZATION, httpCode = code, ex = e)
     }
 
-    private fun handleHttpError(e: Exception) = DataResponse.Error(reason = API_REQUEST, ex = e)
+    private fun handleHttpError(e: HttpException) = DataState.Error(
+        reason = API_REQUEST,
+        httpCode = e.code(),
+        msg = e.message(),
+        ex = e,
+    )
 }

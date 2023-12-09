@@ -1,4 +1,4 @@
-package com.example.data.randomuser
+package com.example.data.api.randomuser
 
 import okhttp3.Interceptor
 

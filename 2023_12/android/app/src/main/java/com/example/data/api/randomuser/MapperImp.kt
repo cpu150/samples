@@ -1,27 +1,27 @@
-package com.example.data.randomuser
+package com.example.data.api.randomuser
 
-import com.example.data.randomuser.model.ErrorRandomUserDTO
-import com.example.data.randomuser.model.GetRandomUsersDTO
-import com.example.data.randomuser.model.RandomUserDTO
-import com.example.data.randomuser.model.RandomUserNameDTO
-import com.example.domain.DataResponse
+import com.example.data.api.randomuser.model.ErrorRandomUserDTO
+import com.example.data.api.randomuser.model.GetRandomUsersDTO
+import com.example.data.api.randomuser.model.RandomUserDTO
+import com.example.data.api.randomuser.model.RandomUserNameDTO
 import com.example.domain.model.User
+import com.example.domain.state.DataState
 import javax.inject.Inject
 
 class MapperImp @Inject constructor() : Mapper {
 
-    override fun map(errorDTO: ErrorRandomUserDTO) = errorDTO.map() ?: DataResponse.Error()
+    override fun map(errorDTO: ErrorRandomUserDTO) = errorDTO.map() ?: DataState.Error()
 
     override fun map(usersDTO: GetRandomUsersDTO) = usersDTO.map()?.let {
         if (it.isEmpty()) {
-            DataResponse.Empty
+            DataState.Empty
         } else {
-            DataResponse.Success(it)
+            DataState.Success(it)
         }
-    } ?: DataResponse.Error()
+    } ?: DataState.Error()
 }
 
-fun ErrorRandomUserDTO.map() = takeIf { isValid() }?.let { DataResponse.Error(msg = error) }
+fun ErrorRandomUserDTO.map() = takeIf { isValid() }?.let { DataState.Error(msg = error) }
 
 fun ErrorRandomUserDTO.isValid() = error != null
 

@@ -1,10 +1,10 @@
-package com.example.data.randomuser.di
+package com.example.data.api.di
 
 import android.content.Context
-import com.example.data.randomuser.AuthenticationInterceptor
-import com.example.data.randomuser.Endpoints
-import com.example.data.randomuser.Mapper
-import com.example.data.randomuser.MapperImp
+import com.example.data.api.randomuser.AuthenticationInterceptor
+import com.example.data.api.randomuser.Endpoints
+import com.example.data.api.randomuser.Mapper
+import com.example.data.api.randomuser.MapperImp
 import com.example.example2023.BuildConfig.RANDOM_USER_BASE_URL
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
