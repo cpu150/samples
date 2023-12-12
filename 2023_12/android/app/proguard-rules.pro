@@ -20,4 +20,5 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keepclassmembers class com.example.data.randomuser.model.** { *; }
+-keepclassmembers class com.example.data.api.randomuser.model.** { *; }
+-keepclassmembers class com.example.data.storage.user.model.** { *; }

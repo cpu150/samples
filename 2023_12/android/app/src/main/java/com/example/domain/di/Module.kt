@@ -1,9 +1,9 @@
 package com.example.domain.di
 
-import com.example.data.api.randomuser.RepositoryImp
+import com.example.data.UserRepositoryImp
 import com.example.domain.randomuser.GetRandomUsersUseCase
 import com.example.domain.randomuser.GetRandomUsersUseCaseImp
-import com.example.domain.randomuser.RandomUserRepository
+import com.example.domain.randomuser.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,7 +16,7 @@ object Module {
 
     @Provides
     @Singleton
-    fun provideRandomUserRepository(repository: RepositoryImp): RandomUserRepository = repository
+    fun provideRandomUserRepository(repository: UserRepositoryImp): UserRepository = repository
 
     @Provides
     @Singleton

@@ -1,10 +1,10 @@
-package com.example.data.api.di
+package com.example.data.di
 
 import android.content.Context
 import com.example.data.api.randomuser.AuthenticationInterceptor
-import com.example.data.api.randomuser.Endpoints
-import com.example.data.api.randomuser.Mapper
-import com.example.data.api.randomuser.MapperImp
+import com.example.data.api.randomuser.RandomUserMapper
+import com.example.data.api.randomuser.RandomUserMapperImp
+import com.example.data.api.randomuser.RandomUserService
 import com.example.example2023.BuildConfig.RANDOM_USER_BASE_URL
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -131,10 +131,10 @@ object ApiModule {
     @Provides
     fun provideMovieAPI(
         @RandomUser retrofit: Retrofit,
-    ): Endpoints = retrofit.create(Endpoints::class.java)
+    ): RandomUserService = retrofit.create(RandomUserService::class.java)
 
     @RandomUser
     @Singleton
     @Provides
-    fun provideMapper(): Mapper = MapperImp()
+    fun provideMapper(): RandomUserMapper = RandomUserMapperImp()
 }

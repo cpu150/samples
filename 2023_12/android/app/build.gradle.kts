@@ -206,6 +206,11 @@ dependencies {
     // Retrofit
     implementation(libs.retrofit)
 
+    // Kotlinx Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.test)
+
     // Kotlin JSON serialization
     implementation(libs.kotlinx.serialization.json)
 
@@ -225,6 +230,9 @@ dependencies {
     // Coil
     implementation(libs.coil.core)
     implementation(libs.coil.compose)
+
+    // Timber
+    implementation(libs.timber)
 
     // Leakcanary
     debugImplementation(libs.leakcanary)

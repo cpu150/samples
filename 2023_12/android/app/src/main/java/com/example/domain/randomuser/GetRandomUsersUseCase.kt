@@ -1,8 +1,8 @@
 package com.example.domain.randomuser
 
 import com.example.domain.model.User
-import com.example.domain.state.DataState
+import com.example.domain.state.RemoteRequestState
 
 interface GetRandomUsersUseCase {
-    suspend fun fetch(nbUsers: Int = 10): DataState<List<User>>
+    suspend fun fetch(nbUsers: Int = 10): RemoteRequestState<List<User>>
 }

@@ -1,14 +1,14 @@
 package com.example.domain.state
 
-sealed interface DataState<out T> {
-    data class Success<T>(val data: T) : DataState<T>
-    data object Empty : DataState<Nothing>
+sealed interface RemoteRequestState<out T> {
+    data class Success<T>(val data: T) : RemoteRequestState<T>
+    data object Empty : RemoteRequestState<Nothing>
     data class Error(
         val reason: ReasonCode = ReasonCode.UNKNOWN,
         val httpCode: Int? = null,
         val msg: String? = null,
         val ex: Exception? = null,
-    ) : DataState<Nothing>
+    ) : RemoteRequestState<Nothing>
 
     enum class ReasonCode {
         UNKNOWN,
