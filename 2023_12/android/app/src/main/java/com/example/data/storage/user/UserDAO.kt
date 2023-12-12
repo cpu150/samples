@@ -17,7 +17,7 @@ interface UserDAO {
         FROM $tableName
         """
     )
-    fun getAllUsers(): Flow<List<UserEntity>?>
+    fun getAll(): Flow<List<UserEntity>?>
 
     @Query(
         """
@@ -27,17 +27,17 @@ interface UserDAO {
         LIMIT 1
         """
     )
-    fun getUser(title: String, firstName: String, lastName: String): UserEntity?
+    fun get(title: String, firstName: String, lastName: String): UserEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addUser(user: UserEntity): Long
+    fun add(user: UserEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addUsers(users: List<UserEntity>): List<Long>
+    fun addAll(users: List<UserEntity>): List<Long>
 
     @Delete
-    fun deleteUser(user: UserEntity): Int
+    fun delete(user: UserEntity): Int
 
     @Delete
-    fun deleteUsers(users: List<UserEntity>): Int
+    fun deleteAll(users: List<UserEntity>): Int
 }

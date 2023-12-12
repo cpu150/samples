@@ -46,10 +46,10 @@ class UserRepositoryImp @Inject constructor(
     }
 
     override suspend fun saveLocalUser(user: User) = user
-        .run { userDAO.getUser(title.value, firstName, lastName) == null }
+        .run { userDAO.get(title.value, firstName, lastName) == null }
         .let { created ->
             try {
-                userDAO.addUser(user.map())
+                userDAO.add(user.map())
 
                 if (created) {
                     LocalRequestState.Create(user)
@@ -69,7 +69,7 @@ class UserRepositoryImp @Inject constructor(
         }
 
     override suspend fun getLocalUsers() = try {
-        userDAO.getAllUsers().map { userEntities ->
+        userDAO.getAll().map { userEntities ->
             val users = userEntities?.map { userEntity -> userEntity.map() } ?: emptyList()
             LocalRequestState.Read(users)
         }
