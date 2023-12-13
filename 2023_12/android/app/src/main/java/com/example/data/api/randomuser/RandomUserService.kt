@@ -7,7 +7,12 @@ import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface RandomUserService {
-    @Headers("Content-Type:application/json; Accept:application/json")
+
+    // Redundant as already defined when creating Retrofit instance in ApiModule
+    @Headers(
+        "Content-Type: application/json",
+        "Accept: application/json"
+    )
     @GET("?format=json")
-    fun getRandomUsers(@Query("results") numberOfUsers: Int): Response<GetRandomUsersDTO>
+    suspend fun getRandomUsers(@Query("results") numberOfUsers: Int): Response<GetRandomUsersDTO>
 }

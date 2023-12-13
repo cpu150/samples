@@ -57,14 +57,14 @@ fun MainScreen(state: MainState) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenEmpty() {
-    MainScreen(MainState())
+    MainScreen(MutableMainState())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSuccess() {
     MainScreen(
-        MainState(
+        MutableMainState(
             users = listOf(
                 User(
                     UserTitle.MISS,
@@ -89,13 +89,13 @@ fun PreviewMainScreenSuccess() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenFetchError() {
-    MainScreen(MainState(userFetchError = "No Internet connection"))
+    MainScreen(MutableMainState(userFetchError = "No Internet connection"))
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSaveError() {
-    MainScreen(MainState(userSaveError = "Out of memory"))
+    MainScreen(MutableMainState(userSaveError = "Out of memory"))
 }
 
 @Preview(showBackground = true)

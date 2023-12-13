@@ -20,7 +20,6 @@ import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Converter
 import retrofit2.Retrofit
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -29,10 +28,6 @@ import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class JsonRetrofitConverter
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
@@ -63,11 +58,6 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideJsonSerializer() = _jsonSerializer
-
-    @JsonRetrofitConverter
-    @Provides
-    @Singleton
-    fun provideRetrofitConverterFactory() = _jsonSerializer.asConverterFactory(contentTypeJson)
 
     @Provides
     @Singleton
@@ -119,11 +109,11 @@ object ApiModule {
     @Singleton
     @Provides
     fun provideRetrofitRandomUser(
-        @JsonRetrofitConverter factory: Converter.Factory,
+        json: Json,
         okHttpClient: OkHttpClient,
     ): Retrofit = Retrofit.Builder()
         .baseUrl(RANDOM_USER_BASE_URL)
-        .addConverterFactory(factory)
+        .addConverterFactory(json.asConverterFactory(contentTypeJson))
         .client(okHttpClient)
         .build()
 
