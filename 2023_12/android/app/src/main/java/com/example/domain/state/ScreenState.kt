@@ -1,8 +1,8 @@
 package com.example.domain.state
 
-sealed interface ScreenState {
-    data object Initializing : ScreenState
-    data object Loading : ScreenState
-    data class Error(val message: String) : ScreenState
-    data class View<S : State>(val state: S) : ScreenState
+sealed interface ScreenState<out S : State> {
+    data object Initializing : ScreenState<Nothing>
+    data class Loading(val progress: Float) : ScreenState<Nothing>
+    data class Error(val message: String) : ScreenState<Nothing>
+    data class View<S : State>(val state: S) : ScreenState<S>
 }

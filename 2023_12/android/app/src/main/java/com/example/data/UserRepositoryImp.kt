@@ -6,6 +6,8 @@ import com.example.data.api.randomuser.model.ErrorRandomUserDTO
 import com.example.data.storage.user.UserDAO
 import com.example.data.storage.user.map
 import com.example.domain.Logger
+import com.example.domain.di.AppDispatchers
+import com.example.domain.di.Dispatcher
 import com.example.domain.model.User
 import com.example.domain.randomuser.UserRepository
 import com.example.domain.state.LocalRequestState
@@ -15,7 +17,6 @@ import com.example.domain.state.RemoteRequestState.ReasonCode.BODY_NULL
 import com.example.domain.state.RemoteRequestState.ReasonCode.ERROR_BODY_DESERIALIZATION
 import com.example.domain.state.RemoteRequestState.ReasonCode.ERROR_BODY_NULL
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -31,7 +32,7 @@ class UserRepositoryImp @Inject constructor(
     private val randomUserMapper: RandomUserMapper,
     private val json: Json,
     private val logger: Logger,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @Dispatcher(AppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : UserRepository {
 
     override suspend fun fetchRemoteRandomUsers(numberOfUser: Int) = withContext(ioDispatcher) {
@@ -45,9 +46,8 @@ class UserRepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun saveLocalUser(user: User) = user
-        .run { userDAO.get(title.value, firstName, lastName) == null }
-        .let { created ->
+    override suspend fun saveLocalUser(user: User) = withContext(ioDispatcher) {
+        user.run { userDAO.get(title.value, firstName, lastName) == null }.let { created ->
             try {
                 userDAO.add(user.map())
 
@@ -67,15 +67,18 @@ class UserRepositoryImp @Inject constructor(
                 }.also { logger.e("$debugMsg $user", e) }
             }
         }
+    }
 
-    override suspend fun getLocalUsers() = try {
-        userDAO.getAll().map { userEntities ->
-            val users = userEntities?.map { userEntity -> userEntity.map() } ?: emptyList()
-            LocalRequestState.Read(users)
+    override suspend fun getLocalUsers() = withContext(ioDispatcher) {
+        try {
+            userDAO.getAll().map { userEntities ->
+                val users = userEntities?.map { userEntity -> userEntity.map() } ?: emptyList()
+                LocalRequestState.Read(users)
+            }
+        } catch (e: Exception) {
+            logger.e("UserRepositoryImp - getLocalUsers - Error", e)
+            flowOf(LocalRequestState.ErrorRead(e))
         }
-    } catch (e: Exception) {
-        logger.e("UserRepositoryImp - getLocalUsers - Error", e)
-        flowOf(LocalRequestState.ErrorRead(e))
     }
 
     private fun <T, U> processResponse(

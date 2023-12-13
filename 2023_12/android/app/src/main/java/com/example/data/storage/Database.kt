@@ -10,7 +10,11 @@ import com.example.domain.Logger
     version = 0,
     entities = [
         UserEntity::class,
-    ]
+    ],
+    autoMigrations = [
+        // Here as an example as in this project the manual migration system is used
+//        AutoMigration(from = 0, to = 1)
+    ],
 )
 abstract class Database : RoomDatabase() {
 

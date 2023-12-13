@@ -133,7 +133,6 @@ object ApiModule {
         @RandomUser retrofit: Retrofit,
     ): RandomUserService = retrofit.create(RandomUserService::class.java)
 
-    @RandomUser
     @Singleton
     @Provides
     fun provideMapper(): RandomUserMapper = RandomUserMapperImp()

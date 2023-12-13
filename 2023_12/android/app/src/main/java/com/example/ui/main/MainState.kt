@@ -1,7 +1,10 @@
 package com.example.ui.main
 
-sealed class MainState {
-    data object Loading : MainState()
-    data class Success<T>(val data: T) : MainState()
-    data class Error(val message: String? = null) : MainState()
-}
+import com.example.domain.model.User
+import com.example.domain.state.State
+
+data class MainState(
+    val users: List<User> = emptyList(),
+    val userFetchError: String? = null,
+    val userSaveError: String? = null,
+) : State

@@ -5,7 +5,7 @@ enum class UserTitle(val value: String) {
     MS("Ms"),
     MISS("Miss"),
     MR("Mr"),
-    Mrs("Mrs");
+    MRS("Mrs");
 
     companion object {
         fun from(str: String?) = entries.find { it.value == str } ?: UNKNOWN
