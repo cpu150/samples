@@ -1,20 +1,20 @@
 package com.example.data.storage
 
 import androidx.room.RoomDatabase
-import com.example.data.storage.migration.From0to1
+import com.example.data.storage.migration.From1to2
 import com.example.data.storage.user.UserDAO
 import com.example.data.storage.user.model.UserEntity
 import com.example.domain.Logger
 
 @androidx.room.Database(
-    version = 0,
+    version = 1,
     entities = [
         UserEntity::class,
     ],
-    autoMigrations = [
-        // Here as an example as in this project the manual migration system is used
+    // It is an auto migration example, in this project the manual migration system is used
+//    autoMigrations = [
 //        AutoMigration(from = 0, to = 1)
-    ],
+//    ],
 )
 abstract class Database : RoomDatabase() {
 
@@ -22,7 +22,7 @@ abstract class Database : RoomDatabase() {
         const val DatabaseName = "AppDatabase"
 
         fun getMigrations(logger: Logger) = arrayOf(
-            From0to1(logger),
+            From1to2(logger),
         )
     }
 

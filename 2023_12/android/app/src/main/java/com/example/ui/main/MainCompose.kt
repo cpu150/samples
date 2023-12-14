@@ -2,14 +2,25 @@ package com.example.ui.main
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.domain.model.User
 import com.example.domain.model.UserTitle
 import com.example.domain.state.ScreenState
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen() {
@@ -40,16 +51,43 @@ fun ErrorScreen(screenState: ScreenState.Error) {
 
 @Composable
 fun MainScreen(state: MainState) {
-    Column {
-        Text(text = "${state.users.count()} user fetched")
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Text(
+            text = "${state.users.count()} user fetched",
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+        )
         state.users.forEach {
-            Text("${it.title.value} ${it.firstName} ${it.lastName}")
+            Text(text = "${it.title.value} ${it.firstName} ${it.lastName}")
         }
         if (state.userFetchError != null) {
             Text(text = "Error while fetching: ${state.userFetchError}")
         }
         if (state.userSaveError != null) {
             Text(text = "Error while saving: ${state.userSaveError}")
+        }
+
+        val vm = hiltViewModel<MainViewModelImpl>()
+        val scope = rememberCoroutineScope()
+        Button(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(4.dp),
+            onClick = {
+                state.users.firstOrNull()?.let { user -> scope.launch { vm.saveUser(user = user) } }
+            },
+        ) {
+            Text(
+                text = "Save",
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .padding(vertical = 8.dp),
+            )
         }
     }
 }
