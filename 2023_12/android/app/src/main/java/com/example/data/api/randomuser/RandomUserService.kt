@@ -11,7 +11,7 @@ interface RandomUserService {
     // Redundant as already defined when creating Retrofit instance in ApiModule
     @Headers(
         "Content-Type: application/json",
-        "Accept: application/json"
+        "Accept: application/json",
     )
     @GET("?format=json")
     suspend fun getRandomUsers(@Query("results") numberOfUsers: Int): Response<GetRandomUsersDTO>

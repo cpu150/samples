@@ -11,4 +11,5 @@ data class RandomUserDTO(
     @SerialName("email") val email: String? = null,
     @SerialName("picture") val picture: RandomUserPictureDTO? = null,
     @SerialName("gender") val gender: String? = null,
+    @SerialName("dob") val dob: DobDTO? = null,
 )

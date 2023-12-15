@@ -18,9 +18,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.domain.model.User
+import com.example.domain.model.UserGender
 import com.example.domain.model.UserTitle
 import com.example.domain.state.ScreenState
 import kotlinx.coroutines.launch
+import java.net.URL
+import java.time.LocalDateTime
 
 @Composable
 fun MainScreen() {
@@ -108,16 +111,37 @@ fun PreviewMainScreenSuccess() {
                     UserTitle.MISS,
                     "Jane",
                     "Doe",
+                    UserGender.FEMALE,
+                    "user@example.com",
+                    LocalDateTime.now(),
+                    27,
+                    URL("https://example.com/large.png"),
+                    URL("https://example.com/medium.png"),
+                    URL("https://example.com/small.png"),
                 ),
                 User(
                     UserTitle.MR,
                     "John",
                     "Doe",
+                    UserGender.from(null),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                 ),
                 User(
                     UserTitle.MS,
                     "John",
                     "Doe",
+                    UserGender.MALE,
+                    "user@example.com",
+                    LocalDateTime.now(),
+                    32,
+                    URL("https://example.com/large.png"),
+                    URL("https://example.com/medium.png"),
+                    URL("https://example.com/small.png"),
                 ),
             )
         )

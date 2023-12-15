@@ -5,5 +5,11 @@ object UserTable {
     const val columnTitle = "title"
     const val columnFirstName = "firstName"
     const val columnLastName = "lastName"
-    val primaryKeys = listOf(columnTitle, columnFirstName, columnLastName)
+    const val columnGender = "gender"
+    const val columnEmail = "email"
+    const val columnBirthDate = "birthDate"
+    const val columnAge = "age"
+    const val columnPicLargeUrl = "picLargeUrl"
+    const val columnPicMediumUrl = "picMediumUrl"
+    const val columnPicSmallUrl = "picSmallUrl"
 }

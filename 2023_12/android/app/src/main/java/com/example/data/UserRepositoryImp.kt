@@ -38,7 +38,7 @@ class UserRepositoryImp @Inject constructor(
     override suspend fun fetchRemoteRandomUsers(numberOfUser: Int) = withContext(ioDispatcher) {
         try {
             processResponse(randomUserService.getRandomUsers(numberOfUser))
-            { dto -> randomUserMapper.map(dto) }
+            { dto -> randomUserMapper.map(dto, logger) }
         } catch (e: HttpException) {
             handleHttpError(e)
         } catch (e: Exception) {
@@ -69,14 +69,15 @@ class UserRepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun getLocalUsers() = withContext(ioDispatcher) {
+    override suspend fun getLocalUsers(logger: Logger?) = withContext(ioDispatcher) {
         try {
             userDAO.getAll().map { userEntities ->
-                val users = userEntities?.map { userEntity -> userEntity.map() } ?: emptyList()
+                val users =
+                    userEntities?.map { userEntity -> userEntity.map(logger) } ?: emptyList()
                 LocalRequestState.Read(users)
             }
         } catch (e: Exception) {
-            logger.e("UserRepositoryImp - getLocalUsers - Error", e)
+            logger?.e("UserRepositoryImp - getLocalUsers - Error", e)
             flowOf(LocalRequestState.ErrorRead(e))
         }
     }

@@ -2,21 +2,18 @@ package com.example.domain.model
 
 import com.example.domain.Logger
 
-enum class UserTitle(val value: String) {
+enum class UserGender(val value: String) {
     UNKNOWN("UNKNOWN"),
-    MS("Ms"),
-    MISS("Miss"),
-    MR("Mr"),
-    MRS("Mrs");
+    MALE("male"),
+    FEMALE("female");
 
     companion object {
-
         fun from(
             str: String?,
             logger: Logger? = null,
         ) = entries.find { it.value == str }
             ?: let {
-                logger?.e("UserTitle - Error parsing $str")
+                logger?.e("UserGender - Enable to parse $str")
                 UNKNOWN
             }
     }

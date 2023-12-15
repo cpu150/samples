@@ -7,13 +7,13 @@ import com.example.data.storage.user.model.UserEntity
 import com.example.domain.Logger
 
 @androidx.room.Database(
-    version = 1,
+    version = 2,
     entities = [
         UserEntity::class,
     ],
     // It is an auto migration example, in this project the manual migration system is used
 //    autoMigrations = [
-//        AutoMigration(from = 0, to = 1)
+//        AutoMigration(from = 1, to = 2)
 //    ],
 )
 abstract class Database : RoomDatabase() {
