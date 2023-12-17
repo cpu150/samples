@@ -1,4 +1,4 @@
-package com.example.domain.randomuser
+package com.example.domain.user
 
 import javax.inject.Inject
 

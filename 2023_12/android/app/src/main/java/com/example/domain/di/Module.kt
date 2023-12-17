@@ -1,11 +1,13 @@
 package com.example.domain.di
 
 import com.example.data.UserRepositoryImp
-import com.example.domain.randomuser.GetRandomUsersUseCase
-import com.example.domain.randomuser.GetRandomUsersUseCaseImp
-import com.example.domain.randomuser.SaveUserUseCase
-import com.example.domain.randomuser.SaveUserUseCaseImp
-import com.example.domain.randomuser.UserRepository
+import com.example.domain.user.GetRandomUsersUseCase
+import com.example.domain.user.GetRandomUsersUseCaseImp
+import com.example.domain.user.LoadLocalUsersUseCase
+import com.example.domain.user.LoadLocalUsersUseCaseImp
+import com.example.domain.user.SaveUserUseCase
+import com.example.domain.user.SaveUserUseCaseImp
+import com.example.domain.user.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,4 +31,10 @@ object Module {
     @Provides
     @Singleton
     fun provideSaveUserUseCase(useCase: SaveUserUseCaseImp): SaveUserUseCase = useCase
+
+    @Provides
+    @Singleton
+    fun provideLoadLocalUsersUseCase(
+        useCase: LoadLocalUsersUseCaseImp
+    ): LoadLocalUsersUseCase = useCase
 }

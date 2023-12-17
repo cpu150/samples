@@ -4,44 +4,53 @@ import com.example.domain.model.User
 import com.example.domain.state.State
 
 interface MainState : State {
-    val users: List<User>
-    val userFetchError: String?
-    val userSaveError: String?
+    val remoteRandomUsers: List<User>
+    val randomUsersError: String?
+    val localUsers: List<User>
+    val localUsersError: String?
+    val saveUsersError: String?
 }
 
 class MutableMainState(
-    users: List<User> = emptyList(),
-    userFetchError: String? = null,
-    userSaveError: String? = null,
+    remoteRandomUsers: List<User> = emptyList(),
+    randomUsersError: String? = null,
+    localUsers: List<User> = emptyList(),
+    localUsersError: String? = null,
+    override var saveUsersError: String? = null,
 ) : MainState {
 
-    override var users: List<User> = users
+    override var remoteRandomUsers: List<User> = remoteRandomUsers
         set(value) {
-            if (userFetchError != null) {
-                userFetchError = null
-            }
-            if (userSaveError != null) {
-                userSaveError = null
+            if (randomUsersError != null) {
+                randomUsersError = null
             }
             if (field != value) {
                 field = value
             }
         }
 
-    override var userFetchError: String? = userFetchError
+    override var randomUsersError: String? = randomUsersError
         set(value) {
             if (field != value) {
-                users = emptyList()
-                userSaveError = null
+                remoteRandomUsers = emptyList()
                 field = value
             }
         }
 
-    override var userSaveError: String? = userSaveError
+    override var localUsers: List<User> = localUsers
+        set(value) {
+            if (localUsersError != null) {
+                localUsersError = null
+            }
+            if (field != value) {
+                field = value
+            }
+        }
+
+    override var localUsersError: String? = localUsersError
         set(value) {
             if (field != value) {
-                users = emptyList()
-                userFetchError = null
+                localUsers = emptyList()
                 field = value
             }
         }

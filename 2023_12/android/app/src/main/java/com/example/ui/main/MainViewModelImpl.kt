@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.Logger
 import com.example.domain.model.User
-import com.example.domain.randomuser.GetRandomUsersUseCase
-import com.example.domain.randomuser.SaveUserUseCase
 import com.example.domain.state.LocalRequestState
-import com.example.domain.state.RemoteRequestState
+import com.example.domain.state.RemoteRequestState.Empty
+import com.example.domain.state.RemoteRequestState.Error
+import com.example.domain.state.RemoteRequestState.Success
 import com.example.domain.state.ScreenState
+import com.example.domain.user.GetRandomUsersUseCase
+import com.example.domain.user.LoadLocalUsersUseCase
+import com.example.domain.user.SaveUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +22,7 @@ import javax.inject.Inject
 class MainViewModelImpl @Inject constructor(
     private val getRandomUsersUseCase: GetRandomUsersUseCase,
     private val saveUserUseCase: SaveUserUseCase,
+    private val loadLocalUsersUseCase: LoadLocalUsersUseCase,
     private val logger: Logger,
 ) : ViewModel(), MainViewModel {
 
@@ -30,47 +34,76 @@ class MainViewModelImpl @Inject constructor(
         get() = _state
 
     init {
-        viewModelScope.launch {
-            _state.value = when (val result = getRandomUsersUseCase.fetch(10)) {
-                RemoteRequestState.Empty ->
-                    ScreenState.View(mainState.apply { users = emptyList() })
+        fetchRandomUsers(10)
+        viewModelScope.launch { collectLocalUsers() }
+    }
 
-                is RemoteRequestState.Success ->
-                    ScreenState.View(mainState.apply { users = result.data })
+    private fun updateState() {
+        _state.value = ScreenState.View(mainState)
+    }
 
-                is RemoteRequestState.Error -> ScreenState.Error(message = getErrorMsg(result))
-                    .also { logger.e("Error while fetching users at the init", result.ex) }
+    private suspend fun collectLocalUsers() {
+        loadLocalUsersUseCase.all().collect { result ->
+            val isAnError = handleLocalUserError(result) { errorMsg ->
+                mainState.apply { localUsersError = errorMsg }
+            }
+            if (!isAnError) {
+                when (result) {
+                    is LocalRequestState.Create -> result.data
+                    is LocalRequestState.Read -> result.data
+                    is LocalRequestState.Update -> result.data
+                    is LocalRequestState.Delete -> result.data
+                    else -> null
+                }?.also {
+                    mainState.localUsers = it
+                    updateState()
+                }
             }
         }
     }
 
-    private fun getErrorMsg(result: RemoteRequestState.Error) = if (result.ex?.message != null) {
+    private fun getErrorMsg(result: Error) = if (result.ex?.message != null) {
         result.ex.message
     } else {
         result.msg
     } ?: "Error code: ${result.reason.name}"
 
-    override suspend fun fetchRandomUsers(nbUsers: Int) {
-        _state.value = when (val result = getRandomUsersUseCase.fetch(nbUsers)) {
-            RemoteRequestState.Empty -> mainState.apply { users = emptyList() }
-            is RemoteRequestState.Success -> mainState.apply { users = result.data }
-            is RemoteRequestState.Error -> mainState.apply { userFetchError = getErrorMsg(result) }
-                .also { logger.e("Error while fetching users", result.ex) }
-        }.let { ScreenState.View(it) }
+    override fun fetchRandomUsers(nbUsers: Int) {
+        viewModelScope.launch {
+            when (val result = getRandomUsersUseCase.fetch(nbUsers)) {
+                Empty -> mainState.remoteRandomUsers = emptyList()
+                is Success -> mainState.remoteRandomUsers = result.data
+                is Error -> mainState.randomUsersError = getErrorMsg(result)
+                    .also { logger.e("Error while fetching users", result.ex) }
+            }
+            updateState()
+        }
     }
 
-    override suspend fun saveUser(user: User) {
-        val defaultErrorMsg = "Unknown error"
-        when (val result = saveUserUseCase.save(user)) {
-            is LocalRequestState.Create,
-            is LocalRequestState.Read,
-            is LocalRequestState.Update,
-            is LocalRequestState.Delete -> null
+    override fun saveUser(user: User) {
+        viewModelScope.launch {
+            handleLocalUserError(saveUserUseCase.save(user)) { errorMsg ->
+                mainState.saveUsersError = errorMsg
+            }
+        }
+    }
 
+    private fun handleLocalUserError(
+        result: LocalRequestState<Any>,
+        handleError: (errorMsg: String) -> Unit,
+    ) = "Unknown error".let { defaultErrorMsg ->
+        when (result) {
             is LocalRequestState.ErrorCreate -> result.e?.message ?: defaultErrorMsg
             is LocalRequestState.ErrorRead -> result.e?.message ?: defaultErrorMsg
             is LocalRequestState.ErrorUpdate -> result.e?.message ?: defaultErrorMsg
             is LocalRequestState.ErrorDelete -> result.e?.message ?: defaultErrorMsg
-        }?.let { _state.value = ScreenState.View(mainState.apply { userSaveError = it }) }
-    }
+            is LocalRequestState.Create,
+            is LocalRequestState.Read,
+            is LocalRequestState.Update,
+            is LocalRequestState.Delete -> null
+        }
+    }?.also { errorMsg ->
+        handleError(errorMsg)
+        updateState()
+    } != null
 }

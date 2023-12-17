@@ -9,13 +9,13 @@ import com.example.domain.Logger
 import com.example.domain.di.AppDispatchers
 import com.example.domain.di.Dispatcher
 import com.example.domain.model.User
-import com.example.domain.randomuser.UserRepository
 import com.example.domain.state.LocalRequestState
 import com.example.domain.state.RemoteRequestState
 import com.example.domain.state.RemoteRequestState.ReasonCode.API_REQUEST
 import com.example.domain.state.RemoteRequestState.ReasonCode.BODY_NULL
 import com.example.domain.state.RemoteRequestState.ReasonCode.ERROR_BODY_DESERIALIZATION
 import com.example.domain.state.RemoteRequestState.ReasonCode.ERROR_BODY_NULL
+import com.example.domain.user.UserRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map

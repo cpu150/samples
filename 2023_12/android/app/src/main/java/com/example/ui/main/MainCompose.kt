@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,15 +21,15 @@ import com.example.domain.model.User
 import com.example.domain.model.UserGender
 import com.example.domain.model.UserTitle
 import com.example.domain.state.ScreenState
-import kotlinx.coroutines.launch
 import java.net.URL
 import java.time.LocalDateTime
 
 @Composable
 fun MainScreen() {
-    val stateFlow = hiltViewModel<MainViewModelImpl>().state
+    val vm = hiltViewModel<MainViewModelImpl>()
+    val stateFlow by vm.state.collectAsStateWithLifecycle()
 
-    when (val screenState = stateFlow.collectAsStateWithLifecycle().value) {
+    when (val screenState = stateFlow) {
         is ScreenState.Error -> ErrorScreen(screenState = screenState)
         ScreenState.Initializing -> InitializingScreen()
         is ScreenState.Loading -> LoadingScreen(screenState)
@@ -57,43 +57,56 @@ fun MainScreen(state: MainState) {
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
-        Text(
-            text = "${state.users.count()} user fetched",
-            modifier = Modifier
-                .padding(bottom = 8.dp)
-        )
-        state.users.forEach {
-            Text(text = "${it.title.value} ${it.firstName} ${it.lastName}")
-        }
-        if (state.userFetchError != null) {
-            Text(text = "Error while fetching: ${state.userFetchError}")
-        }
-        if (state.userSaveError != null) {
-            Text(text = "Error while saving: ${state.userSaveError}")
-        }
-
-        val vm = hiltViewModel<MainViewModelImpl>()
-        val scope = rememberCoroutineScope()
-        Button(
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(4.dp),
-            onClick = {
-                state.users.firstOrNull()?.let { user -> scope.launch { vm.saveUser(user = user) } }
-            },
-        ) {
+        with(state) {
             Text(
-                text = "Save",
-                textAlign = TextAlign.Center,
-                fontSize = 16.sp,
+                text = "${remoteRandomUsers.count()} user(s) fetched",
                 modifier = Modifier
-                    .padding(vertical = 8.dp),
+                    .padding(bottom = 8.dp)
             )
+
+            remoteRandomUsers.forEach { user -> UserRow(user = user) }
+
+            if (randomUsersError != null) {
+                Text(text = "Error while fetching: $randomUsersError")
+            }
+            if (saveUsersError != null) {
+                Text(text = "Error while saving: $saveUsersError")
+            }
+
+            Text(
+                modifier = Modifier.padding(
+                    top = 16.dp,
+                    bottom = if (localUsers.isNotEmpty()) 8.dp else 0.dp
+                ),
+                text = "${localUsers.count()} user(s) saved"
+            )
+            localUsers.forEach { user -> UserRow(user = user) }
+
+            val vm = hiltViewModel<MainViewModelImpl>()
+            Button(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(4.dp),
+                onClick = {
+                    remoteRandomUsers.firstOrNull()?.let { user -> vm.saveUser(user = user) }
+                },
+            ) {
+                Text(
+                    text = "Save first user in the remote list",
+                    textAlign = TextAlign.Center,
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .padding(vertical = 8.dp),
+                )
+            }
         }
     }
 }
+
+@Composable
+fun UserRow(user: User) = with(user) { Text(text = "${title.value} $firstName $lastName") }
 
 @Preview(showBackground = true)
 @Composable
@@ -106,7 +119,7 @@ fun PreviewMainScreenEmpty() {
 fun PreviewMainScreenSuccess() {
     MainScreen(
         MutableMainState(
-            users = listOf(
+            remoteRandomUsers = listOf(
                 User(
                     UserTitle.MISS,
                     "Jane",
@@ -151,13 +164,24 @@ fun PreviewMainScreenSuccess() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenFetchError() {
-    MainScreen(MutableMainState(userFetchError = "No Internet connection"))
+    MainScreen(MutableMainState(randomUsersError = "No Internet connection"))
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSaveError() {
-    MainScreen(MutableMainState(userSaveError = "Out of memory"))
+    MainScreen(MutableMainState(saveUsersError = "Out of memory"))
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewMainScreenFetchAndSaveErrors() {
+    MainScreen(
+        MutableMainState(
+            saveUsersError = "Out of memory",
+            randomUsersError = "No Internet connection"
+        )
+    )
 }
 
 @Preview(showBackground = true)
