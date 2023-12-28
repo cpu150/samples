@@ -13,10 +13,12 @@ import com.example.domain.user.GetRandomUsersUseCase
 import com.example.domain.user.LoadLocalUsersUseCase
 import com.example.domain.user.SaveUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class MainViewModelImpl @Inject constructor(
@@ -34,8 +36,24 @@ class MainViewModelImpl @Inject constructor(
         get() = _state
 
     init {
-        fetchRandomUsers(10)
-        viewModelScope.launch { collectLocalUsers() }
+        simulateLoading {
+            fetchRandomUsers(10)
+            viewModelScope.launch { collectLocalUsers() }
+        }
+    }
+
+    private fun simulateLoading(completion: () -> Unit) {
+        var progress = 0f
+
+        viewModelScope.launch {
+            do {
+                _state.value = ScreenState.Loading(progress)
+                delay(.8.seconds)
+                progress += 1 / 4f
+            } while (progress < 1f)
+
+            completion()
+        }
     }
 
     private fun updateState() {

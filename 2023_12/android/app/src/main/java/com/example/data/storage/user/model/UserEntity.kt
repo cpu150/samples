@@ -28,8 +28,7 @@ data class UserEntity(
     @ColumnInfo(name = columnLastName) val lastName: String,
     @ColumnInfo(name = columnGender) val gender: String?,
     @ColumnInfo(name = columnEmail) val email: String?,
-    @ColumnInfo(name = columnBirthDate)
-    val birthDate: LocalDateTime?,
+    @ColumnInfo(name = columnBirthDate) val birthDate: LocalDateTime?,
     @ColumnInfo(name = columnAge) val age: Int?,
     @ColumnInfo(name = columnPicLargeUrl) val picLargeUrl: String?,
     @ColumnInfo(name = columnPicMediumUrl) val picMediumUrl: String?,

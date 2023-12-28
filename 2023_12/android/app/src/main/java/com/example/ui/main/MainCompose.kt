@@ -23,6 +23,7 @@ import com.example.domain.model.UserTitle
 import com.example.domain.state.ScreenState
 import java.net.URL
 import java.time.LocalDateTime
+import kotlin.math.roundToInt
 
 @Composable
 fun MainScreen() {
@@ -44,7 +45,8 @@ fun InitializingScreen() {
 
 @Composable
 fun LoadingScreen(screenState: ScreenState.Loading) {
-    Text(text = "SCREEN LOADING (${screenState.progress * 100f}%)")
+    val progress = screenState.progress * 100f
+    Text(text = "SCREEN LOADING ${progress.roundToInt()}%")
 }
 
 @Composable
