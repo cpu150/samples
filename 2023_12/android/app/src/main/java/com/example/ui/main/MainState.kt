@@ -11,47 +11,19 @@ interface MainState : State {
     val saveUsersError: String?
 }
 
-class MutableMainState(
-    remoteRandomUsers: List<User> = emptyList(),
-    randomUsersError: String? = null,
-    localUsers: List<User> = emptyList(),
-    localUsersError: String? = null,
+data class MutableMainState(
+    override var remoteRandomUsers: List<User> = emptyList(),
+    override var randomUsersError: String? = null,
+    override var localUsers: List<User> = emptyList(),
+    override var localUsersError: String? = null,
     override var saveUsersError: String? = null,
 ) : MainState {
 
-    override var remoteRandomUsers: List<User> = remoteRandomUsers
-        set(value) {
-            if (randomUsersError != null) {
-                randomUsersError = null
-            }
-            if (field != value) {
-                field = value
-            }
-        }
-
-    override var randomUsersError: String? = randomUsersError
-        set(value) {
-            if (field != value) {
-                remoteRandomUsers = emptyList()
-                field = value
-            }
-        }
-
-    override var localUsers: List<User> = localUsers
-        set(value) {
-            if (localUsersError != null) {
-                localUsersError = null
-            }
-            if (field != value) {
-                field = value
-            }
-        }
-
-    override var localUsersError: String? = localUsersError
-        set(value) {
-            if (field != value) {
-                localUsers = emptyList()
-                field = value
-            }
-        }
+    override fun toString() = """
+        remoteRandomUsers: $remoteRandomUsers
+        randomUsersError: $randomUsersError
+        localUsers: $localUsers
+        localUsersError: $localUsersError
+        saveUsersError: $saveUsersError
+    """.trimIndent()
 }

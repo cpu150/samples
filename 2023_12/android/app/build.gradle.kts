@@ -127,13 +127,18 @@ android {
         }
     }
 
+    /*
+     * https://developer.android.com/build/jdks#jdk-config-in-studio
+     * Increase -> Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JDK
+     * Android 14 (compileSdk=34) -> Java 17
+     */
+    val javaVersion = JavaVersion.VERSION_17
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
-
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = javaVersion.toString()
     }
 
     hilt {

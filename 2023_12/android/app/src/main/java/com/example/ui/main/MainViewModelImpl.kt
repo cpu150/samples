@@ -45,7 +45,7 @@ class MainViewModelImpl @Inject constructor(
     private suspend fun collectLocalUsers() {
         loadLocalUsersUseCase.all().collect { result ->
             val isAnError = handleLocalUserError(result) { errorMsg ->
-                mainState.apply { localUsersError = errorMsg }
+                mainState.localUsersError = errorMsg
             }
             if (!isAnError) {
                 when (result) {
@@ -70,6 +70,8 @@ class MainViewModelImpl @Inject constructor(
 
     override fun fetchRandomUsers(nbUsers: Int) {
         viewModelScope.launch {
+            mainState.randomUsersError = null
+
             when (val result = getRandomUsersUseCase.fetch(nbUsers)) {
                 Empty -> mainState.remoteRandomUsers = emptyList()
                 is Success -> mainState.remoteRandomUsers = result.data
@@ -90,7 +92,7 @@ class MainViewModelImpl @Inject constructor(
 
     private fun handleLocalUserError(
         result: LocalRequestState<Any>,
-        handleError: (errorMsg: String) -> Unit,
+        handleError: (errorMsg: String?) -> Unit,
     ) = "Unknown error".let { defaultErrorMsg ->
         when (result) {
             is LocalRequestState.ErrorCreate -> result.e?.message ?: defaultErrorMsg
@@ -102,7 +104,7 @@ class MainViewModelImpl @Inject constructor(
             is LocalRequestState.Update,
             is LocalRequestState.Delete -> null
         }
-    }?.also { errorMsg ->
+    }.also { errorMsg ->
         handleError(errorMsg)
         updateState()
     } != null
