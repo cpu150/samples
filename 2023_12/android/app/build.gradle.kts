@@ -102,7 +102,7 @@ android {
             buildConfigField(
                 "String",
                 "RANDOM_USER_BASE_URL",
-                "\"https://randomuser.me/api/$randomUserApiVer/\""
+                "\"http://randomuser.me/api/$randomUserApiVer/\""
             )
         }
         create("uat") {
