@@ -21,7 +21,7 @@ abstract class Database : RoomDatabase() {
     companion object {
         const val DatabaseName = "AppDatabase"
 
-        fun getMigrations(logger: Logger) = arrayOf(
+        fun getMigrations(logger: Logger? = null) = arrayOf(
             From1to2(logger),
         )
     }

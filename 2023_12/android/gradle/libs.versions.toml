@@ -41,6 +41,7 @@ leakcanary = "2.12"
 test-junit = "4.13.2"
 test-junit-android = "1.1.5"
 test-ui-espresso = "3.5.1"
+junitKtx = "1.1.5"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
@@ -75,6 +76,8 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 androidx-room-ktx-extension = { module = "androidx.room:room-ktx", version.ref = "androidx-room" }
 
+androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "androidx-room" }
+
 coil-core = { module = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
@@ -85,9 +88,8 @@ leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.re
 test-junit = { module = "junit:junit", version.ref = "test-junit" }
 test-junit-android = { module = "androidx.test.ext:junit", version.ref = "test-junit-android" }
 
-androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "androidx-room" }
-
 test-ui-espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "test-ui-espresso" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 
 [bundles]
 androidx-room = ["androidx-room-ktx-extension", "androidx-room-runtime"]
@@ -98,3 +100,4 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 hilt-android-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kps = { id = "com.google.devtools.ksp", version.ref = "kps" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+androidx-room = { id = "androidx.room", version.ref = "androidx-room" }

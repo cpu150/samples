@@ -41,10 +41,10 @@ fun GetRandomUsersDTO.isValid() = results != null && info?.results?.takeIf { it 
 
 fun RandomUserDTO.map(logger: Logger? = null) = takeIf { isValid() }?.let {
     User(
-        title = UserTitle.from(it.name?.title),
+        title = UserTitle.fromEntity(it.name?.title),
         firstName = it.name?.firstName ?: "",
         lastName = it.name?.lastName ?: "",
-        gender = UserGender.from(it.gender, logger),
+        gender = UserGender.fromEntity(it.gender, logger),
         email = it.email,
         birthDate = it.dob?.date?.toDateTime(birthDateFormat, logger),
         age = it.dob?.age,

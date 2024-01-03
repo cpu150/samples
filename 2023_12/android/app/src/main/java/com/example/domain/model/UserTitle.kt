@@ -2,7 +2,7 @@ package com.example.domain.model
 
 import com.example.domain.Logger
 
-enum class UserTitle(val value: String) {
+enum class UserTitle(val entityValue: String) {
     UNKNOWN("UNKNOWN"),
     MS("Ms"),
     MISS("Miss"),
@@ -11,12 +11,12 @@ enum class UserTitle(val value: String) {
 
     companion object {
 
-        fun from(
-            str: String?,
+        fun fromEntity(
+            entityValue: String?,
             logger: Logger? = null,
-        ) = entries.find { it.value == str }
+        ) = entries.find { it.entityValue == entityValue }
             ?: let {
-                logger?.e("UserTitle - Error parsing $str")
+                logger?.e("UserTitle - Error parsing $entityValue")
                 UNKNOWN
             }
     }

@@ -9,7 +9,10 @@ plugins {
     alias(libs.plugins.hilt.android.plugin)
     alias(libs.plugins.kps)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.androidx.room)
 }
+
+val roomSchemaPath = "$projectDir/roomschemas"
 
 val runCommand: (project: Project, cmd: String) -> String = { project: Project, cmd: String ->
     val byteOut = ByteArrayOutputStream()
@@ -146,16 +149,8 @@ android {
         enableAggregatingTask = true
     }
 
-    val roomSchemaPath = "$projectDir/roomschemas"
-
-    ksp {
-        arg("room.schemaLocation", roomSchemaPath)
-        arg("room.incremental", "true")
-        arg("room.expandProjection", "true")
-    }
-
     sourceSets {
-        // Add schema as test assets
+        // Adds exported schema location as test app assets
         getByName("androidTest").assets.srcDir(roomSchemaPath)
     }
 
@@ -196,6 +191,7 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
+    testImplementation(libs.androidx.junit.ktx)
 
     // Compose
     implementation(libs.androidx.material3.compose)
@@ -232,6 +228,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx.extension)
 
+    // Tests Room
+    androidTestImplementation(libs.androidx.room.testing)
+
     // Coil
     implementation(libs.coil.core)
     implementation(libs.coil.compose)
@@ -246,9 +245,15 @@ dependencies {
     testImplementation(libs.test.junit)
     androidTestImplementation(libs.test.junit.android)
 
-    // Tests Room
-    testImplementation(libs.androidx.room.testing)
-
     // UI Tests
     androidTestImplementation(libs.test.ui.espresso)
+}
+
+room {
+    schemaDirectory(roomSchemaPath)
+}
+
+ksp {
+    arg("room.incremental", "true")
+    arg("room.expandProjection", "true")
 }

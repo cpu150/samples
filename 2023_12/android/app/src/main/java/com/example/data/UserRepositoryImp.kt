@@ -47,7 +47,7 @@ class UserRepositoryImp @Inject constructor(
     }
 
     override suspend fun saveLocalUser(user: User) = withContext(ioDispatcher) {
-        user.run { userDAO.get(title.value, firstName, lastName) == null }.let { created ->
+        user.run { userDAO.get(title.entityValue, firstName, lastName) == null }.let { created ->
             try {
                 userDAO.add(user.map())
 

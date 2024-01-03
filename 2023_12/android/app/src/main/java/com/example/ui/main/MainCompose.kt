@@ -108,7 +108,7 @@ fun MainScreen(state: MainState) {
 }
 
 @Composable
-fun UserRow(user: User) = with(user) { Text(text = "${title.value} $firstName $lastName") }
+fun UserRow(user: User) = with(user) { Text(text = "${title.entityValue} $firstName $lastName") }
 
 @Preview(showBackground = true)
 @Composable
@@ -138,7 +138,7 @@ fun PreviewMainScreenSuccess() {
                     UserTitle.MR,
                     "John",
                     "Doe",
-                    UserGender.from(null),
+                    UserGender.fromEntity(null),
                     null,
                     null,
                     null,

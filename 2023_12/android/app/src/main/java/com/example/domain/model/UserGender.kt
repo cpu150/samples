@@ -1,19 +1,20 @@
 package com.example.domain.model
 
+import com.example.data.storage.user.UserTable.columnGenderDefaultValue
 import com.example.domain.Logger
 
-enum class UserGender(val value: String) {
-    UNKNOWN("UNKNOWN"),
+enum class UserGender(val entityValue: String) {
+    UNKNOWN(columnGenderDefaultValue),
     MALE("male"),
     FEMALE("female");
 
     companion object {
-        fun from(
-            str: String?,
+        fun fromEntity(
+            entityValue: String?,
             logger: Logger? = null,
-        ) = entries.find { it.value == str }
+        ) = entries.find { it.entityValue == entityValue }
             ?: let {
-                logger?.e("UserGender - Enable to parse $str")
+                logger?.e("UserGender - Enable to parse $entityValue")
                 UNKNOWN
             }
     }

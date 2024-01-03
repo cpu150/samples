@@ -6,6 +6,7 @@ object UserTable {
     const val columnFirstName = "firstName"
     const val columnLastName = "lastName"
     const val columnGender = "gender"
+    const val columnGenderDefaultValue = "UNKNOWN"
     const val columnEmail = "email"
     const val columnBirthDate = "birthDate"
     const val columnAge = "age"

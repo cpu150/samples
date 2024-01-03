@@ -15,21 +15,25 @@ import com.example.domain.model.UserGender
 import javax.inject.Inject
 
 class From1to2 @Inject constructor(
-    private val logger: Logger,
+    private val logger: Logger?,
 ) : Migration(1, 2) {
 
     override fun migrate(db: SupportSQLiteDatabase) {
-        logger.d("Starting DB migration")
+        logger?.d("Starting DB migration")
         try {
             migrateUser(db)
         } catch (e: Exception) {
-            logger.e("DB migration failed", e)
+            logger?.e("DB migration failed", e)
         }
-        logger.d("Ending DB migration")
+        logger?.d("Ending DB migration")
     }
 
     private fun migrateUser(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE `$tableName` ADD COLUMN `$columnGender` TEXT DEFAULT '${UserGender.UNKNOWN.value}'")
+        database.execSQL(
+            """ALTER TABLE `$tableName`
+            ADD COLUMN `$columnGender`
+            TEXT NOT NULL DEFAULT '${UserGender.UNKNOWN.entityValue}'"""
+        )
         database.execSQL("ALTER TABLE `$tableName` ADD COLUMN `$columnEmail` TEXT")
         database.execSQL("ALTER TABLE `$tableName` ADD COLUMN `$columnBirthDate` TEXT")
         database.execSQL("ALTER TABLE `$tableName` ADD COLUMN `$columnAge` INTEGER")

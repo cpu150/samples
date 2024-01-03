@@ -9,6 +9,7 @@ import com.example.data.storage.user.UserTable.columnBirthDate
 import com.example.data.storage.user.UserTable.columnEmail
 import com.example.data.storage.user.UserTable.columnFirstName
 import com.example.data.storage.user.UserTable.columnGender
+import com.example.data.storage.user.UserTable.columnGenderDefaultValue
 import com.example.data.storage.user.UserTable.columnLastName
 import com.example.data.storage.user.UserTable.columnPicLargeUrl
 import com.example.data.storage.user.UserTable.columnPicMediumUrl
@@ -26,7 +27,7 @@ data class UserEntity(
     @ColumnInfo(name = columnTitle) val title: String,
     @ColumnInfo(name = columnFirstName) val firstName: String,
     @ColumnInfo(name = columnLastName) val lastName: String,
-    @ColumnInfo(name = columnGender) val gender: String?,
+    @ColumnInfo(name = columnGender, defaultValue = columnGenderDefaultValue) val gender: String,
     @ColumnInfo(name = columnEmail) val email: String?,
     @ColumnInfo(name = columnBirthDate) val birthDate: LocalDateTime?,
     @ColumnInfo(name = columnAge) val age: Int?,

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "7c735631a43c41039df8400abc72df5d",
+    "identityHash": "0e4d9255369e81637909431cc45b97af",
     "entities": [
       {
         "tableName": "user",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `firstName` TEXT NOT NULL, `lastName` TEXT NOT NULL, `gender` TEXT, `email` TEXT, `birthDate` TEXT, `age` INTEGER, `picLargeUrl` TEXT, `picMediumUrl` TEXT, `picSmallUrl` TEXT, PRIMARY KEY(`title`, `firstName`, `lastName`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `firstName` TEXT NOT NULL, `lastName` TEXT NOT NULL, `gender` TEXT NOT NULL DEFAULT 'UNKNOWN', `email` TEXT, `birthDate` TEXT, `age` INTEGER, `picLargeUrl` TEXT, `picMediumUrl` TEXT, `picSmallUrl` TEXT, PRIMARY KEY(`title`, `firstName`, `lastName`))",
         "fields": [
           {
             "fieldPath": "title",
@@ -30,7 +30,8 @@
             "fieldPath": "gender",
             "columnName": "gender",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true,
+            "defaultValue": "'UNKNOWN'"
           },
           {
             "fieldPath": "email",
@@ -84,7 +85,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c735631a43c41039df8400abc72df5d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0e4d9255369e81637909431cc45b97af')"
     ]
   }
 }

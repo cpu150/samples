@@ -16,10 +16,10 @@ class UserMapperImp : UserMapper {
 }
 
 fun UserEntity.map(logger: Logger? = null) = User(
-    title = UserTitle.from(title, logger),
+    title = UserTitle.fromEntity(title, logger),
     firstName = firstName,
     lastName = lastName,
-    gender = UserGender.from(gender, logger),
+    gender = UserGender.fromEntity(gender, logger),
     email = email,
     birthDate = birthDate,
     age = age,
@@ -29,10 +29,10 @@ fun UserEntity.map(logger: Logger? = null) = User(
 )
 
 fun User.map() = UserEntity(
-    title = title.value,
+    title = title.entityValue,
     firstName = firstName,
     lastName = lastName,
-    gender = gender.value,
+    gender = gender.entityValue,
     email = email,
     birthDate = birthDate,
     age = age,
