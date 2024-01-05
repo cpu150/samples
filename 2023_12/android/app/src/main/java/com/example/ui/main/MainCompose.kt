@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.domain.Logger
 import com.example.domain.model.User
 import com.example.domain.model.UserGender
 import com.example.domain.model.UserTitle
@@ -26,10 +27,11 @@ import java.time.LocalDateTime
 import kotlin.math.roundToInt
 
 @Composable
-fun MainScreen() {
+fun MainScreen(logger: Logger? = null) {
     val vm = hiltViewModel<MainViewModelImpl>()
     val stateFlow by vm.state.collectAsStateWithLifecycle()
-
+    // TODO: Check why when removing the log 'stateFlow' does not refresh anymore
+    logger?.d("UI updated: $stateFlow")
     when (val screenState = stateFlow) {
         is ScreenState.Error -> ErrorScreen(screenState = screenState)
         ScreenState.Initializing -> InitializingScreen()

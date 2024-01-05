@@ -155,7 +155,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     buildFeatures {
@@ -243,6 +243,7 @@ dependencies {
 
     // Tests
     testImplementation(libs.test.junit)
+    testImplementation(libs.test.mockk)
     androidTestImplementation(libs.test.junit.android)
 
     // UI Tests

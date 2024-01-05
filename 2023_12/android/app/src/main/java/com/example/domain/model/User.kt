@@ -21,6 +21,13 @@ data class User(
     | title = "$title"
     | firstName = "$firstName"
     | lastName = "$lastName"
+    | gender = "$gender"
+    | email = "$email"
+    | birthDate = "$birthDate"
+    | age = "$age"
+    | picLargeUrl = "$picLargeUrl"
+    | picMediumUrl = "$picMediumUrl"
+    | picSmallUrl = "$picSmallUrl"
     |}
     """.trimMargin()
 }

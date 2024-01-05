@@ -37,7 +37,7 @@ class LoggerImp : Logger {
     override fun d(message: String) {
         if (BuildConfig.DEBUG) {
             val stack = getStackTrace()
-            Timber.tag(getTag(stack)).i(message)
+            Timber.tag(getTag(stack)).d(message)
         }
     }
 
