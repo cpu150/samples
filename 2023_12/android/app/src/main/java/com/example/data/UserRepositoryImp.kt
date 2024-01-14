@@ -1,6 +1,6 @@
 package com.example.data
 
-import com.example.data.api.randomuser.RandomUserMapper
+import com.example.data.api.randomuser.ApiUserMapper
 import com.example.data.api.randomuser.RandomUserService
 import com.example.data.api.randomuser.model.ErrorRandomUserDTO
 import com.example.data.storage.user.UserDAO
@@ -29,7 +29,7 @@ import javax.inject.Inject
 class UserRepositoryImp @Inject constructor(
     private val randomUserService: RandomUserService,
     private val userDAO: UserDAO,
-    private val randomUserMapper: RandomUserMapper,
+    private val randomUserMapper: ApiUserMapper,
     private val json: Json,
     private val logger: Logger,
     @Dispatcher(AppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,

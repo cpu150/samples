@@ -1,8 +1,8 @@
 package com.example.data.di
 
 import android.content.Context
+import com.example.data.api.randomuser.ApiUserMapper
 import com.example.data.api.randomuser.AuthenticationInterceptor
-import com.example.data.api.randomuser.RandomUserMapper
 import com.example.data.api.randomuser.RandomUserMapperImp
 import com.example.data.api.randomuser.RandomUserService
 import com.example.example2023.BuildConfig.RANDOM_USER_BASE_URL
@@ -125,5 +125,5 @@ object ApiModule {
 
     @Singleton
     @Provides
-    fun provideMapper(): RandomUserMapper = RandomUserMapperImp()
+    fun provideMapper(): ApiUserMapper = RandomUserMapperImp()
 }

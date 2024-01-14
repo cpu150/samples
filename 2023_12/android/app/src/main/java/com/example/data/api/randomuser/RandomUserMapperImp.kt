@@ -14,7 +14,7 @@ import com.example.domain.model.UserTitle
 import com.example.domain.state.RemoteRequestState
 import javax.inject.Inject
 
-class RandomUserMapperImp @Inject constructor() : RandomUserMapper {
+class RandomUserMapperImp @Inject constructor() : ApiUserMapper {
 
     override fun map(errorDTO: ErrorRandomUserDTO) = errorDTO.map() ?: RemoteRequestState.Error()
 
@@ -34,7 +34,7 @@ fun ErrorRandomUserDTO.map() = takeIf { isValid() }?.let { RemoteRequestState.Er
 
 fun ErrorRandomUserDTO.isValid() = error != null
 
-fun GetRandomUsersDTO.map(logger: Logger? = null): List<User>? =
+fun GetRandomUsersDTO.map(logger: Logger? = null) =
     takeIf { isValid() }?.results?.mapNotNull { it.map(logger) }
 
 fun GetRandomUsersDTO.isValid() = results != null && info?.results?.takeIf { it >= 0 } != null

@@ -3,8 +3,8 @@ package com.example.data.di
 import android.content.Context
 import androidx.room.Room
 import com.example.data.storage.Database
-import com.example.data.storage.user.UserMapper
-import com.example.data.storage.user.UserMapperImp
+import com.example.data.storage.user.RoomUserMapperImp
+import com.example.data.storage.user.StorageUserMapper
 import com.example.domain.Logger
 import dagger.Module
 import dagger.Provides
@@ -34,5 +34,5 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideUserMapper(): UserMapper = UserMapperImp()
+    fun provideUserMapper(): StorageUserMapper = RoomUserMapperImp()
 }

@@ -8,7 +8,7 @@ import com.example.domain.model.UserGender
 import com.example.domain.model.UserTitle
 import com.example.domain.state.RemoteRequestState
 
-class UserMapperImp : UserMapper {
+class RoomUserMapperImp : StorageUserMapper {
     override fun map(userEntities: List<UserEntity>, logger: Logger?) =
         RemoteRequestState.Success(userEntities.map { it.map(logger) })
 
