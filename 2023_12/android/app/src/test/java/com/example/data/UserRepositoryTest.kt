@@ -4,8 +4,9 @@ import com.example.data.api.randomuser.ApiUserMapper
 import com.example.data.api.randomuser.RandomUserService
 import com.example.data.api.randomuser.UserTestUtility.DEFAULT_TITLE
 import com.example.data.api.randomuser.UserTestUtility.getDomainUser
-import com.example.data.api.randomuser.UserTestUtility.getRandomUsers
+import com.example.data.api.randomuser.UserTestUtility.getRandomUser
 import com.example.data.api.randomuser.UserTestUtility.getRoomUser
+import com.example.data.api.randomuser.UserTestUtility.getUserDTO
 import com.example.data.storage.user.UserDAO
 import com.example.domain.model.UserTitle
 import com.example.domain.state.LocalRequestState
@@ -32,6 +33,9 @@ class UserRepositoryTest {
     @get:Rule
     val mockkRule = MockKRule(this)
 
+    private val scheduler = TestCoroutineScheduler()
+    private val dispatcher = StandardTestDispatcher(scheduler, "UserRepositoryTest")
+
     @MockK
     private val userDAO = mockk<UserDAO>()
 
@@ -46,12 +50,15 @@ class UserRepositoryTest {
 
     private lateinit var repository: UserRepository
 
-    private val scheduler = TestCoroutineScheduler()
-    private val dispatcher = StandardTestDispatcher(scheduler, "UserRepositoryTest")
-
     private val userTitle = if (DEFAULT_TITLE != UserTitle.MISS) UserTitle.MISS else UserTitle.MRS
     private val firstName = "UserRepositoryTest"
     private val lastName = "UserRepositoryTest"
+    private val apiUser = getUserDTO(
+        title = userTitle.entityValue,
+        firstName = firstName,
+        lastName = lastName,
+    )
+    private val apiUsers = getRandomUser(apiUser)
     private val userSaved = getDomainUser(
         title = userTitle,
         firstName = firstName,
@@ -65,20 +72,18 @@ class UserRepositoryTest {
 
     @Before
     fun setUp() {
-        val apiUsers = getRandomUsers()
-
         every { runBlocking { randomUserService.getRandomUsers(any()) } } returns
                 Response.success(apiUsers)
 
         every { apiUserMapper.map(apiUsers, any()) } returns
-                RemoteRequestState.Success(listOf(getDomainUser()))
+                RemoteRequestState.Success(listOf(userSaved))
 
         every { userDAO.add(any()) } returns 1
         every { userDAO.addAll(any()) } returns listOf(1)
+        every { userDAO.getAll() } returns flowOf(listOf(userEntitySaved))
 
         every { with(userSaved) { userDAO.get(title.entityValue, firstName, lastName) } } returns
                 userEntitySaved
-        every { userDAO.getAll() } returns flowOf(listOf(userEntitySaved))
 
         every {
             with(userSaved) {
@@ -103,6 +108,8 @@ class UserRepositoryTest {
         val result = repository.fetchRemoteRandomUsers(10)
 
         assert(result is RemoteRequestState.Success) { "fetchRemoteRandomUsers FAILED" }
+        val resultUser = (result as RemoteRequestState.Success).data.first()
+        assert(resultUser == userSaved) { "saveLocalUser Create FAILED: $resultUser != $userSaved" }
     }
 
     @Test
