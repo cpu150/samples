@@ -25,7 +25,7 @@ class MainViewModelImpl @Inject constructor(
     private val getRandomUsersUseCase: GetRandomUsersUseCase,
     private val saveUserUseCase: SaveUserUseCase,
     private val loadLocalUsersUseCase: LoadLocalUsersUseCase,
-    private val logger: Logger,
+    private val logger: Logger?,
 ) : ViewModel(), MainViewModel {
 
     private var mainState = MutableMainState()
@@ -94,7 +94,7 @@ class MainViewModelImpl @Inject constructor(
                 Empty -> mainState.remoteRandomUsers = emptyList()
                 is Success -> mainState.remoteRandomUsers = result.data
                 is Error -> mainState.randomUsersError = getErrorMsg(result)
-                    .also { logger.e("Error while fetching users", result.ex) }
+                    .also { logger?.e("Error while fetching users", result.ex) }
             }
             updateState()
         }
