@@ -31,7 +31,7 @@ class UserRepositoryImp @Inject constructor(
     private val userDAO: UserDAO,
     private val randomUserMapper: ApiUserMapper,
     private val json: Json,
-    private val logger: Logger,
+    private val logger: Logger?,
     @Dispatcher(AppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : UserRepository {
 
@@ -47,24 +47,24 @@ class UserRepositoryImp @Inject constructor(
     }
 
     override suspend fun saveLocalUser(user: User) = withContext(ioDispatcher) {
-        user.run { userDAO.get(title.entityValue, firstName, lastName) == null }.let { created ->
+        user.run { userDAO.get(title.entityValue, firstName, lastName) == null }.let { notExists ->
             try {
                 userDAO.add(user.map())
 
-                if (created) {
+                if (notExists) {
                     LocalRequestState.Create(user)
                 } else {
                     LocalRequestState.Update(user)
                 }
             } catch (e: Exception) {
                 var debugMsg = "UserRepositoryImp - saveLocalUser - Error "
-                if (created) {
+                if (notExists) {
                     debugMsg += "CREATING"
                     LocalRequestState.ErrorCreate(user, e)
                 } else {
                     debugMsg += "INSERTING"
                     LocalRequestState.ErrorUpdate(user, e)
-                }.also { logger.e("$debugMsg $user", e) }
+                }.also { logger?.e("$debugMsg $user", e) }
             }
         }
     }
