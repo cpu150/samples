@@ -50,7 +50,7 @@ class MainViewModelImpl @Inject constructor(
                 _state.value = ScreenState.Loading(progress)
                 delay(.8.seconds)
                 progress += 1 / 4f
-            } while (progress < 1f)
+            } while (progress <= 1f)
 
             completion()
         }
@@ -74,9 +74,9 @@ class MainViewModelImpl @Inject constructor(
                     else -> null
                 }?.also {
                     mainState.localUsers = it
-                    updateState()
                 }
             }
+            updateState()
         }
     }
 
@@ -104,6 +104,7 @@ class MainViewModelImpl @Inject constructor(
         viewModelScope.launch {
             handleLocalUserError(saveUserUseCase.save(user)) { errorMsg ->
                 mainState.saveUsersError = errorMsg
+                updateState()
             }
         }
     }
@@ -121,9 +122,6 @@ class MainViewModelImpl @Inject constructor(
             is LocalRequestState.Read,
             is LocalRequestState.Update,
             is LocalRequestState.Delete -> null
-        }
-    }.also { errorMsg ->
-        handleError(errorMsg)
-        updateState()
+        }.also { errorMsg -> handleError(errorMsg) }
     } != null
 }
