@@ -16,6 +16,8 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
 import io.mockk.mockk
+import io.mockk.unmockkAll
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
@@ -23,6 +25,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -99,6 +102,12 @@ class UserRepositoryTest {
             logger = null,
             ioDispatcher = dispatcher,
         )
+    }
+
+    @After
+    fun tearDown() {
+        dispatcher.cancel()
+        unmockkAll()
     }
 
     // TESTS
