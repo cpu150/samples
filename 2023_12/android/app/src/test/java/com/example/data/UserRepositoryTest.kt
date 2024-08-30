@@ -100,7 +100,7 @@ class UserRepositoryTest {
             randomUserMapper = apiUserMapper,
             json = json,
             logger = null,
-            ioDispatcher = dispatcher,
+            coroutineDispatcher = dispatcher,
         )
     }
 

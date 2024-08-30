@@ -1,5 +1,6 @@
 package com.example.ui.main
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.Logger
@@ -22,6 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class MainViewModelImpl @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val getRandomUsersUseCase: GetRandomUsersUseCase,
     private val saveUserUseCase: SaveUserUseCase,
     private val loadLocalUsersUseCase: LoadLocalUsersUseCase,
@@ -30,6 +32,8 @@ class MainViewModelImpl @Inject constructor(
 
     private var mainState = MutableMainState()
 
+    // savedStateHandle["state"] = state
+    // savedStateHandle.getStateFlow("state", ScreenState.Initializing)
     private val _state = MutableStateFlow<ScreenState<MainState>>(ScreenState.Initializing)
 
     override val state: StateFlow<ScreenState<MainState>>

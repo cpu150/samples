@@ -22,6 +22,8 @@ import com.example.domain.model.User
 import com.example.domain.model.UserGender
 import com.example.domain.model.UserTitle
 import com.example.domain.state.ScreenState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.net.URL
 import java.time.LocalDateTime
 import kotlin.math.roundToInt
@@ -36,7 +38,7 @@ fun MainScreen(logger: Logger? = null) {
         is ScreenState.Error -> ErrorScreen(screenState = screenState)
         ScreenState.Initializing -> InitializingScreen()
         is ScreenState.Loading -> LoadingScreen(screenState)
-        is ScreenState.View -> MainScreen(screenState.state)
+        is ScreenState.View -> MainScreen(screenState.state, vm)
     }
 }
 
@@ -57,7 +59,7 @@ fun ErrorScreen(screenState: ScreenState.Error) {
 }
 
 @Composable
-fun MainScreen(state: MainState) {
+fun MainScreen(state: MainState, vm: MainViewModel) {
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
@@ -86,7 +88,6 @@ fun MainScreen(state: MainState) {
             )
             localUsers.forEach { user -> UserRow(user = user) }
 
-            val vm = hiltViewModel<MainViewModelImpl>()
             Button(
                 modifier = Modifier
                     .padding(top = 16.dp)
@@ -112,80 +113,88 @@ fun MainScreen(state: MainState) {
 @Composable
 fun UserRow(user: User) = with(user) { Text(text = "${title.entityValue} $firstName $lastName") }
 
+private fun getMainViewModel(mainState: MainState = MutableMainState()) = object : MainViewModel {
+    override val state: StateFlow<ScreenState<MainState>> =
+        MutableStateFlow(ScreenState.View(mainState))
+
+    override fun fetchRandomUsers(nbUsers: Int) {}
+    override fun saveUser(user: User) {}
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenEmpty() {
-    MainScreen(MutableMainState())
+    MainScreen(MutableMainState(), getMainViewModel())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSuccess() {
-    MainScreen(
-        MutableMainState(
-            remoteRandomUsers = listOf(
-                User(
-                    UserTitle.MISS,
-                    "Jane",
-                    "Doe",
-                    UserGender.FEMALE,
-                    "user@example.com",
-                    LocalDateTime.now(),
-                    27,
-                    URL("https://example.com/large.png"),
-                    URL("https://example.com/medium.png"),
-                    URL("https://example.com/small.png"),
-                ),
-                User(
-                    UserTitle.MR,
-                    "John",
-                    "Doe",
-                    UserGender.fromEntity(null),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                ),
-                User(
-                    UserTitle.MS,
-                    "John",
-                    "Doe",
-                    UserGender.MALE,
-                    "user@example.com",
-                    LocalDateTime.now(),
-                    32,
-                    URL("https://example.com/large.png"),
-                    URL("https://example.com/medium.png"),
-                    URL("https://example.com/small.png"),
-                ),
-            )
+    val mainState = MutableMainState(
+        remoteRandomUsers = listOf(
+            User(
+                UserTitle.MISS,
+                "Jane",
+                "Doe",
+                UserGender.FEMALE,
+                "user@example.com",
+                LocalDateTime.now(),
+                27,
+                URL("https://example.com/large.png"),
+                URL("https://example.com/medium.png"),
+                URL("https://example.com/small.png"),
+            ),
+            User(
+                UserTitle.MR,
+                "John",
+                "Doe",
+                UserGender.fromEntity(null),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ),
+            User(
+                UserTitle.MS,
+                "John",
+                "Doe",
+                UserGender.MALE,
+                "user@example.com",
+                LocalDateTime.now(),
+                32,
+                URL("https://example.com/large.png"),
+                URL("https://example.com/medium.png"),
+                URL("https://example.com/small.png"),
+            ),
         )
     )
+    MainScreen(mainState, getMainViewModel(mainState))
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenFetchError() {
-    MainScreen(MutableMainState(randomUsersError = "No Internet connection"))
+    val mainState = MutableMainState(randomUsersError = "No Internet connection")
+    MainScreen(mainState, getMainViewModel(mainState))
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSaveError() {
-    MainScreen(MutableMainState(saveUsersError = "Out of memory"))
+    val mainState = MutableMainState(saveUsersError = "Out of memory")
+    MainScreen(mainState, getMainViewModel(mainState))
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenFetchAndSaveErrors() {
-    MainScreen(
-        MutableMainState(
-            saveUsersError = "Out of memory",
-            randomUsersError = "No Internet connection"
-        )
+    val mainState = MutableMainState(
+        saveUsersError = "Out of memory",
+        randomUsersError = "No Internet connection"
     )
+    MainScreen(mainState, getMainViewModel(mainState))
 }
 
 @Preview(showBackground = true)

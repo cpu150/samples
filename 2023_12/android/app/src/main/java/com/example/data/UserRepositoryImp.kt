@@ -32,21 +32,22 @@ class UserRepositoryImp @Inject constructor(
     private val randomUserMapper: ApiUserMapper,
     private val json: Json,
     private val logger: Logger?,
-    @Dispatcher(AppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(AppDispatchers.Default) private val coroutineDispatcher: CoroutineDispatcher,
 ) : UserRepository {
 
-    override suspend fun fetchRemoteRandomUsers(numberOfUser: Int) = withContext(ioDispatcher) {
-        try {
-            processResponse(randomUserService.getRandomUsers(numberOfUser))
-            { dto -> randomUserMapper.map(dto, logger) }
-        } catch (e: HttpException) {
-            handleHttpError(e)
-        } catch (e: Exception) {
-            RemoteRequestState.Error(reason = API_REQUEST, ex = e)
+    override suspend fun fetchRemoteRandomUsers(numberOfUser: Int) =
+        withContext(coroutineDispatcher) {
+            try {
+                processResponse(randomUserService.getRandomUsers(numberOfUser))
+                { dto -> randomUserMapper.map(dto, logger) }
+            } catch (e: HttpException) {
+                handleHttpError(e)
+            } catch (e: Exception) {
+                RemoteRequestState.Error(reason = API_REQUEST, ex = e)
+            }
         }
-    }
 
-    override suspend fun saveLocalUser(user: User) = withContext(ioDispatcher) {
+    override suspend fun saveLocalUser(user: User) = withContext(coroutineDispatcher) {
         user.run { userDAO.get(title.entityValue, firstName, lastName) == null }.let { notExists ->
             try {
                 userDAO.add(user.map())
@@ -69,7 +70,7 @@ class UserRepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun getLocalUsers(logger: Logger?) = withContext(ioDispatcher) {
+    override suspend fun getLocalUsers(logger: Logger?) = withContext(coroutineDispatcher) {
         try {
             userDAO.getAll().map { userEntities ->
                 val users =
