@@ -22,6 +22,8 @@ import com.example.domain.model.User
 import com.example.domain.model.UserGender
 import com.example.domain.model.UserTitle
 import com.example.domain.state.ScreenState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.net.URL
 import java.time.LocalDateTime
 import kotlin.math.roundToInt
@@ -57,7 +59,7 @@ fun ErrorScreen(screenState: ScreenState.Error) {
 }
 
 @Composable
-fun MainScreen(state: MainState) {
+fun MainScreen(state: MainState, vm: MainViewModel = hiltViewModel<MainViewModelImpl>()) {
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
@@ -86,7 +88,6 @@ fun MainScreen(state: MainState) {
             )
             localUsers.forEach { user -> UserRow(user = user) }
 
-            val vm = hiltViewModel<MainViewModelImpl>()
             Button(
                 modifier = Modifier
                     .padding(top = 16.dp)
@@ -112,10 +113,26 @@ fun MainScreen(state: MainState) {
 @Composable
 fun UserRow(user: User) = with(user) { Text(text = "${title.entityValue} $firstName $lastName") }
 
+private fun getMainViewModel(
+    screenState: ScreenState<MainState> = ScreenState.Initializing,
+): MainViewModel {
+    return object : MainViewModel {
+        override val state: StateFlow<ScreenState<MainState>> = MutableStateFlow(screenState)
+
+        override fun fetchRandomUsers(nbUsers: Int) {
+            // no-op
+        }
+
+        override fun saveUser(user: User) {
+            // no-op
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenEmpty() {
-    MainScreen(MutableMainState())
+    MainScreen(MutableMainState(), getMainViewModel())
 }
 
 @Preview(showBackground = true)
@@ -161,20 +178,20 @@ fun PreviewMainScreenSuccess() {
                     URL("https://example.com/small.png"),
                 ),
             )
-        )
+        ), getMainViewModel()
     )
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenFetchError() {
-    MainScreen(MutableMainState(randomUsersError = "No Internet connection"))
+    MainScreen(MutableMainState(randomUsersError = "No Internet connection"), getMainViewModel())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSaveError() {
-    MainScreen(MutableMainState(saveUsersError = "Out of memory"))
+    MainScreen(MutableMainState(saveUsersError = "Out of memory"), getMainViewModel())
 }
 
 @Preview(showBackground = true)
@@ -184,7 +201,7 @@ fun PreviewMainScreenFetchAndSaveErrors() {
         MutableMainState(
             saveUsersError = "Out of memory",
             randomUsersError = "No Internet connection"
-        )
+        ), getMainViewModel()
     )
 }
 
