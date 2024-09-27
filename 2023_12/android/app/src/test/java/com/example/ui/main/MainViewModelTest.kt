@@ -6,7 +6,7 @@ import com.example.domain.model.User
 import com.example.domain.model.UserTitle
 import com.example.domain.state.LocalRequestState
 import com.example.domain.state.RemoteRequestState
-import com.example.domain.state.ScreenState
+import com.example.ui.ScreenState
 import com.example.domain.user.GetRandomUsersUseCase
 import com.example.domain.user.LoadLocalUsersUseCase
 import com.example.domain.user.SaveUserUseCase
@@ -114,7 +114,7 @@ class MainViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `GIVEN MainViewModel WHEN initialising THEN Initializing, Loading and View states`() =
+    fun `GIVEN MainViewModel WHEN initialising THEN Initialising, Loading and View states`() =
         runTest(scheduler) {
             val viewModel = getNewMainViewModel()
             var state = viewModel.state.firstOrNull()

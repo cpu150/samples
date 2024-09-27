@@ -1,10 +1,10 @@
 package com.example.data.di
 
 import android.content.Context
-import com.example.data.api.randomuser.ApiUserMapper
+import com.example.data.api.randomuser.RandomUserMapper
 import com.example.data.api.randomuser.AuthenticationInterceptor
 import com.example.data.api.randomuser.RandomUserMapperImp
-import com.example.data.api.randomuser.RandomUserService
+import com.example.data.api.randomuser.RandomUserApi
 import com.example.example2023.BuildConfig.RANDOM_USER_BASE_URL
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -12,7 +12,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.CacheControl
@@ -47,7 +46,6 @@ object ApiModule {
     private const val CACHE_FILE_NAME = "HttpCache"
     private const val CACHE_SIZE_BYTES = 10 * 1024 * 1024L // 10 MB
 
-    @OptIn(ExperimentalSerializationApi::class)
     private val _jsonSerializer = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -119,11 +117,11 @@ object ApiModule {
 
     @Singleton
     @Provides
-    fun provideMovieAPI(
+    fun provideRandomUserService(
         @RandomUser retrofit: Retrofit,
-    ): RandomUserService = retrofit.create(RandomUserService::class.java)
+    ): RandomUserApi = retrofit.create(RandomUserApi::class.java)
 
     @Singleton
     @Provides
-    fun provideMapper(): ApiUserMapper = RandomUserMapperImp()
+    fun provideMapper(): RandomUserMapper = RandomUserMapperImp()
 }

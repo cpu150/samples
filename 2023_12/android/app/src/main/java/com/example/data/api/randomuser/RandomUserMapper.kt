@@ -6,7 +6,7 @@ import com.example.domain.Logger
 import com.example.domain.model.User
 import com.example.domain.state.RemoteRequestState
 
-interface ApiUserMapper {
+interface RandomUserMapper {
     fun map(errorDTO: ErrorRandomUserDTO): RemoteRequestState.Error
     fun map(usersDTO: GetRandomUsersDTO, logger: Logger? = null): RemoteRequestState<List<User>>
 }

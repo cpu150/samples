@@ -15,9 +15,9 @@ import java.net.URL
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class ApiUserMapperTest {
+class RandomUserMapperTest {
 
-    private lateinit var apiMapper: ApiUserMapper
+    private lateinit var apiMapper: RandomUserMapper
 
     @Before
     fun setUp() {

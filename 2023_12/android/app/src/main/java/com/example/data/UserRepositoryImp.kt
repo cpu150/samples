@@ -1,7 +1,7 @@
 package com.example.data
 
-import com.example.data.api.randomuser.ApiUserMapper
-import com.example.data.api.randomuser.RandomUserService
+import com.example.data.api.randomuser.RandomUserApi
+import com.example.data.api.randomuser.RandomUserMapper
 import com.example.data.api.randomuser.model.ErrorRandomUserDTO
 import com.example.data.storage.user.UserDAO
 import com.example.data.storage.user.map
@@ -17,9 +17,11 @@ import com.example.domain.state.RemoteRequestState.ReasonCode.ERROR_BODY_DESERIA
 import com.example.domain.state.RemoteRequestState.ReasonCode.ERROR_BODY_NULL
 import com.example.domain.user.UserRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.ResponseBody
 import retrofit2.HttpException
@@ -27,9 +29,9 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class UserRepositoryImp @Inject constructor(
-    private val randomUserService: RandomUserService,
+    private val randomUserApi: RandomUserApi,
     private val userDAO: UserDAO,
-    private val randomUserMapper: ApiUserMapper,
+    private val randomUserMapper: RandomUserMapper,
     private val json: Json,
     private val logger: Logger?,
     @Dispatcher(AppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -37,11 +39,12 @@ class UserRepositoryImp @Inject constructor(
 
     override suspend fun fetchRemoteRandomUsers(numberOfUser: Int) = withContext(ioDispatcher) {
         try {
-            processResponse(randomUserService.getRandomUsers(numberOfUser))
+            processResponse(randomUserApi.getRandomUsers(numberOfUser))
             { dto -> randomUserMapper.map(dto, logger) }
         } catch (e: HttpException) {
             handleHttpError(e)
         } catch (e: Exception) {
+            ensureActive()
             RemoteRequestState.Error(reason = API_REQUEST, ex = e)
         }
     }
@@ -57,6 +60,7 @@ class UserRepositoryImp @Inject constructor(
                     LocalRequestState.Update(user)
                 }
             } catch (e: Exception) {
+                ensureActive()
                 var debugMsg = "UserRepositoryImp - saveLocalUser - Error "
                 if (notExists) {
                     debugMsg += "CREATING"
@@ -77,6 +81,7 @@ class UserRepositoryImp @Inject constructor(
                 LocalRequestState.Read(users)
             }
         } catch (e: Exception) {
+            ensureActive()
             logger?.e("UserRepositoryImp - getLocalUsers - Error", e)
             flowOf(LocalRequestState.ErrorRead(e))
         }
@@ -98,7 +103,9 @@ class UserRepositoryImp @Inject constructor(
     private fun deserializedErrorBody(code: Int, errorBody: ResponseBody) = try {
         json.decodeFromString<ErrorRandomUserDTO>(errorBody.string())
             .run { RemoteRequestState.Error(httpCode = code, msg = error) }
-    } catch (e: Exception) {
+    } catch (e: SerializationException) { // in case of any decoding-specific error
+        RemoteRequestState.Error(reason = ERROR_BODY_DESERIALIZATION, httpCode = code, ex = e)
+    } catch (e: IllegalArgumentException) { // if the decoded input is not a valid instance of T
         RemoteRequestState.Error(reason = ERROR_BODY_DESERIALIZATION, httpCode = code, ex = e)
     }
 

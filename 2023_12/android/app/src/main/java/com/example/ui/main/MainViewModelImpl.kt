@@ -8,17 +8,18 @@ import com.example.domain.state.LocalRequestState
 import com.example.domain.state.RemoteRequestState.Empty
 import com.example.domain.state.RemoteRequestState.Error
 import com.example.domain.state.RemoteRequestState.Success
-import com.example.domain.state.ScreenState
 import com.example.domain.user.GetRandomUsersUseCase
 import com.example.domain.user.LoadLocalUsersUseCase
 import com.example.domain.user.SaveUserUseCase
+import com.example.ui.ScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class MainViewModelImpl @Inject constructor(
@@ -28,55 +29,36 @@ class MainViewModelImpl @Inject constructor(
     private val logger: Logger?,
 ) : ViewModel(), MainViewModel {
 
-    private var mainState = MutableMainState()
-
-    private val _state = MutableStateFlow<ScreenState<MainState>>(ScreenState.Initializing)
-
-    override val state: StateFlow<ScreenState<MainState>>
-        get() = _state
+    private val _state = MutableStateFlow(MainState())
+    override val state: StateFlow<MainState> = _state
 
     init {
-        simulateLoading {
-            fetchRandomUsers(10)
-            viewModelScope.launch { collectLocalUsers() }
-        }
-    }
-
-    private fun simulateLoading(completion: () -> Unit) {
-        var progress = 0f
-
+        _state.update { it.copy(screenState = ScreenState.Loading(0f)) }
         viewModelScope.launch {
-            do {
-                _state.value = ScreenState.Loading(progress)
-                delay(.8.seconds)
-                progress += 1 / 4f
-            } while (progress <= 1f)
+            launch { collectLocalUsers() }
 
-            completion()
+            suspendedFetchRandomUsers(10)
+
+            _state.update { it.copy(screenState = ScreenState.Loaded) }
         }
-    }
-
-    private fun updateState() {
-        _state.value = ScreenState.View(mainState)
     }
 
     private suspend fun collectLocalUsers() {
         loadLocalUsersUseCase.all().collect { result ->
-            val isAnError = handleLocalUserError(result) { errorMsg ->
-                mainState.localUsersError = errorMsg
-            }
-            if (!isAnError) {
-                when (result) {
-                    is LocalRequestState.Create -> result.data
-                    is LocalRequestState.Read -> result.data
-                    is LocalRequestState.Update -> result.data
-                    is LocalRequestState.Delete -> result.data
-                    else -> null
-                }?.also {
-                    mainState.localUsers = it
+            handleLocalUserError(result) { errorMsg ->
+                _state.update { it.copy(localUsersError = errorMsg) }
+            }.takeIf { isAnError -> isAnError.not() }
+                ?.also { _ ->
+                    when (result) {
+                        is LocalRequestState.Create -> result.data
+                        is LocalRequestState.Read -> result.data
+                        is LocalRequestState.Update -> result.data
+                        is LocalRequestState.Delete -> result.data
+                        else -> null
+                    }?.also { users ->
+                        _state.update { it.copy(localUsers = users) }
+                    }
                 }
-            }
-            updateState()
         }
     }
 
@@ -87,24 +69,32 @@ class MainViewModelImpl @Inject constructor(
     } ?: "Error code: ${result.reason.name}"
 
     override fun fetchRandomUsers(nbUsers: Int) {
-        viewModelScope.launch {
-            mainState.randomUsersError = null
+        viewModelScope.launch { suspendedFetchRandomUsers(nbUsers) }
+    }
 
-            when (val result = getRandomUsersUseCase.fetch(nbUsers)) {
-                Empty -> mainState.remoteRandomUsers = emptyList()
-                is Success -> mainState.remoteRandomUsers = result.data
-                is Error -> mainState.randomUsersError = getErrorMsg(result)
-                    .also { logger?.e("Error while fetching users", result.ex) }
-            }
-            updateState()
+    private suspend fun suspendedFetchRandomUsers(nbUsers: Int) {
+        var randomUsersError: String? = null
+        var remoteRandomUsers = _state.value.remoteRandomUsers
+
+        when (val result = getRandomUsersUseCase.fetch(nbUsers)) {
+            Empty -> remoteRandomUsers = emptyList()
+            is Success -> remoteRandomUsers = result.data
+            is Error -> randomUsersError = getErrorMsg(result)
+                .also { logger?.e("Error while fetching users", result.ex) }
+        }
+
+        _state.update {
+            it.copy(
+                randomUsersError = randomUsersError,
+                remoteRandomUsers = remoteRandomUsers
+            )
         }
     }
 
     override fun saveUser(user: User) {
         viewModelScope.launch {
             handleLocalUserError(saveUserUseCase.save(user)) { errorMsg ->
-                mainState.saveUsersError = errorMsg
-                updateState()
+                _state.update { it.copy(saveUsersError = errorMsg) }
             }
         }
     }

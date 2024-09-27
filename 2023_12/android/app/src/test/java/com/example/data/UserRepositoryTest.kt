@@ -1,7 +1,7 @@
 package com.example.data
 
-import com.example.data.api.randomuser.ApiUserMapper
-import com.example.data.api.randomuser.RandomUserService
+import com.example.data.api.randomuser.RandomUserMapper
+import com.example.data.api.randomuser.RandomUserApi
 import com.example.data.api.randomuser.UserTestUtility.DEFAULT_TITLE
 import com.example.data.api.randomuser.UserTestUtility.getDomainUser
 import com.example.data.api.randomuser.UserTestUtility.getRandomUser
@@ -43,10 +43,10 @@ class UserRepositoryTest {
     private val userDAO = mockk<UserDAO>()
 
     @MockK
-    private val randomUserService = mockk<RandomUserService>()
+    private val randomUserApi = mockk<RandomUserApi>()
 
     @MockK
-    private val apiUserMapper = mockk<ApiUserMapper>()
+    private val randomUserMapper = mockk<RandomUserMapper>()
 
     @MockK
     private val json = mockk<Json>()
@@ -75,10 +75,10 @@ class UserRepositoryTest {
 
     @Before
     fun setUp() {
-        every { runBlocking { randomUserService.getRandomUsers(any()) } } returns
+        every { runBlocking { randomUserApi.getRandomUsers(any()) } } returns
                 Response.success(apiUsers)
 
-        every { apiUserMapper.map(apiUsers, any()) } returns
+        every { randomUserMapper.map(apiUsers, any()) } returns
                 RemoteRequestState.Success(listOf(userSaved))
 
         every { userDAO.add(any()) } returns 1
@@ -95,9 +95,9 @@ class UserRepositoryTest {
         } returns null
 
         repository = UserRepositoryImp(
-            randomUserService = randomUserService,
+            randomUserApi = randomUserApi,
             userDAO = userDAO,
-            randomUserMapper = apiUserMapper,
+            randomUserMapper = randomUserMapper,
             json = json,
             logger = null,
             ioDispatcher = dispatcher,

@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.io.ByteArrayOutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -10,6 +9,7 @@ plugins {
     alias(libs.plugins.kps)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.androidx.room)
+    alias(libs.plugins.kotlin.compose)
 }
 
 val roomSchemaPath = "$projectDir/roomschemas"
@@ -51,8 +51,12 @@ android {
         versionName = "1.0"
 
         val projectName = applicationId?.split(".")?.last() ?: "no_project_name"
-        archivesName =
+        val archivesName =
             "$projectName-$versionName-$versionCode-$gitHash-${gitBranch.replace("/", "_")}"
+        extensions
+            .getByType(BasePluginExtension::class.java)
+            .archivesName
+            .set(archivesName)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -191,6 +195,8 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
+
+    // Tests
     testImplementation(libs.androidx.junit.ktx)
 
     // Compose

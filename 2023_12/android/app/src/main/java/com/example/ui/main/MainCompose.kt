@@ -21,7 +21,7 @@ import com.example.domain.Logger
 import com.example.domain.model.User
 import com.example.domain.model.UserGender
 import com.example.domain.model.UserTitle
-import com.example.domain.state.ScreenState
+import com.example.ui.ScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.net.URL
@@ -32,24 +32,23 @@ import kotlin.math.roundToInt
 fun MainScreen(logger: Logger? = null) {
     val vm = hiltViewModel<MainViewModelImpl>()
     val stateFlow by vm.state.collectAsStateWithLifecycle()
-    // TODO: Check why when removing the log 'stateFlow' does not refresh anymore
-    logger?.d("UI updated: $stateFlow")
-    when (val screenState = stateFlow) {
+
+    when (val screenState = stateFlow.screenState) {
         is ScreenState.Error -> ErrorScreen(screenState = screenState)
-        ScreenState.Initializing -> InitializingScreen()
-        is ScreenState.Loading -> LoadingScreen(screenState)
-        is ScreenState.View -> MainScreen(screenState.state)
+        ScreenState.Loaded -> MainScreen(stateFlow)
+        ScreenState.Initializing, is ScreenState.Loading -> LoadingScreen(screenState)
     }
+
+    logger?.d("UI updated with $stateFlow")
 }
 
 @Composable
-fun InitializingScreen() {
-    Text(text = "SCREEN INITIALIZING")
-}
-
-@Composable
-fun LoadingScreen(screenState: ScreenState.Loading) {
-    val progress = screenState.progress * 100f
+fun LoadingScreen(screenState: ScreenState) {
+    val progress = if (screenState is ScreenState.Loading) {
+        screenState.progress * 100f
+    } else {
+        0f
+    }
     Text(text = "SCREEN LOADING ${progress.roundToInt()}%")
 }
 
@@ -99,7 +98,7 @@ fun MainScreen(state: MainState, vm: MainViewModel = hiltViewModel<MainViewModel
                 },
             ) {
                 Text(
-                    text = "Save first user in the remote list",
+                    text = "Save first user in the offline list",
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
                     modifier = Modifier
@@ -114,10 +113,10 @@ fun MainScreen(state: MainState, vm: MainViewModel = hiltViewModel<MainViewModel
 fun UserRow(user: User) = with(user) { Text(text = "${title.entityValue} $firstName $lastName") }
 
 private fun getMainViewModel(
-    screenState: ScreenState<MainState> = ScreenState.Initializing,
+    state: MainState = MainState(),
 ): MainViewModel {
     return object : MainViewModel {
-        override val state: StateFlow<ScreenState<MainState>> = MutableStateFlow(screenState)
+        override val state: StateFlow<MainState> = MutableStateFlow(state)
 
         override fun fetchRandomUsers(nbUsers: Int) {
             // no-op
@@ -132,14 +131,14 @@ private fun getMainViewModel(
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenEmpty() {
-    MainScreen(MutableMainState(), getMainViewModel())
+    MainScreen(MainState(), getMainViewModel())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSuccess() {
     MainScreen(
-        MutableMainState(
+        MainState(
             remoteRandomUsers = listOf(
                 User(
                     UserTitle.MISS,
@@ -185,30 +184,24 @@ fun PreviewMainScreenSuccess() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenFetchError() {
-    MainScreen(MutableMainState(randomUsersError = "No Internet connection"), getMainViewModel())
+    MainScreen(MainState(randomUsersError = "No Internet connection"), getMainViewModel())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenSaveError() {
-    MainScreen(MutableMainState(saveUsersError = "Out of memory"), getMainViewModel())
+    MainScreen(MainState(saveUsersError = "Out of memory"), getMainViewModel())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreenFetchAndSaveErrors() {
     MainScreen(
-        MutableMainState(
+        MainState(
             saveUsersError = "Out of memory",
             randomUsersError = "No Internet connection"
         ), getMainViewModel()
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewMainScreenInitializing() {
-    InitializingScreen()
 }
 
 @Preview(

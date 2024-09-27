@@ -1,5 +1,6 @@
 package com.example.data.storage.migration
 
+import android.database.SQLException
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.data.storage.user.UserTable.columnAge
@@ -22,7 +23,7 @@ class From1to2 @Inject constructor(
         logger?.d("Starting DB migration")
         try {
             migrateUser(db)
-        } catch (e: Exception) {
+        } catch (e: SQLException) {
             logger?.e("DB migration failed", e)
         }
         logger?.d("Ending DB migration")

@@ -1,29 +1,13 @@
 package com.example.ui.main
 
 import com.example.domain.model.User
-import com.example.domain.state.State
+import com.example.ui.ScreenState
 
-interface MainState : State {
-    val remoteRandomUsers: List<User>
-    val randomUsersError: String?
-    val localUsers: List<User>
-    val localUsersError: String?
-    val saveUsersError: String?
-}
-
-data class MutableMainState(
-    override var remoteRandomUsers: List<User> = emptyList(),
-    override var randomUsersError: String? = null,
-    override var localUsers: List<User> = emptyList(),
-    override var localUsersError: String? = null,
-    override var saveUsersError: String? = null,
-) : MainState {
-
-    override fun toString() = """
-        remoteRandomUsers: $remoteRandomUsers
-        randomUsersError: $randomUsersError
-        localUsers: $localUsers
-        localUsersError: $localUsersError
-        saveUsersError: $saveUsersError
-    """.trimIndent()
-}
+data class MainState(
+    val screenState: ScreenState = ScreenState.Initializing,
+    val remoteRandomUsers: List<User> = emptyList(),
+    val randomUsersError: String? = null,
+    val localUsers: List<User> = emptyList(),
+    val localUsersError: String? = null,
+    val saveUsersError: String? = null,
+)
