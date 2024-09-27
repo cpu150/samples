@@ -2,7 +2,7 @@ package com.example.data.api.randomuser
 
 import com.example.common.toDateTime
 import com.example.common.toURL
-import com.example.data.api.randomuser.model.DobDTO.Companion.birthDateFormat
+import com.example.data.api.randomuser.model.DobDTO.Companion.BIRTH_DATE_FORMAT
 import com.example.data.api.randomuser.model.ErrorRandomUserDTO
 import com.example.data.api.randomuser.model.GetRandomUsersDTO
 import com.example.data.api.randomuser.model.RandomUserDTO
@@ -46,7 +46,7 @@ fun RandomUserDTO.map(logger: Logger? = null) = takeIf { isValid() }?.let {
         lastName = it.name?.lastName ?: "",
         gender = UserGender.fromEntity(it.gender, logger),
         email = it.email,
-        birthDate = it.dob?.date?.toDateTime(birthDateFormat, logger),
+        birthDate = it.dob?.date?.toDateTime(BIRTH_DATE_FORMAT, logger),
         age = it.dob?.age,
         picLargeUrl = it.picture?.large?.toURL(logger),
         picMediumUrl = it.picture?.medium?.toURL(logger),

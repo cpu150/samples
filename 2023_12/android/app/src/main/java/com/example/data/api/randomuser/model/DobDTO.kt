@@ -12,6 +12,6 @@ data class DobDTO(
 ) {
     companion object {
         // ex: 1963-10-25T13:56:32.813Z
-        const val birthDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+        const val BIRTH_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
     }
 }

@@ -1,4 +1,4 @@
-package com.example.ui.main
+package com.example.ui.userlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,23 +20,23 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModelImpl @Inject constructor(
+class UserListViewModelImpl @Inject constructor(
     private val getRandomUsersUseCase: GetRandomUsersUseCase,
     private val saveUserUseCase: SaveUserUseCase,
     private val loadLocalUsersUseCase: LoadLocalUsersUseCase,
     private val logger: Logger?,
-) : ViewModel(), MainViewModel {
+) : ViewModel(), UserListViewModel {
 
-    private val _state = MutableStateFlow(MainState())
-    override val state: StateFlow<MainState> = _state
+    private val _state = MutableStateFlow(UserListScreenState())
+    override val state: StateFlow<UserListScreenState> = _state
 
     init {
-        _state.update { it.copy(screenState = ScreenState.Loading()) }
-
-        viewModelScope.launch { collectLocalUsers() }
-
         viewModelScope.launch {
-            suspendedFetchRandomUsers(10)
+            _state.update { it.copy(screenState = ScreenState.Loading()) }
+
+            launch { collectLocalUsers() }
+
+            suspendedFetchRandomUsers(100)
             _state.update { it.copy(screenState = ScreenState.Loaded) }
         }
     }

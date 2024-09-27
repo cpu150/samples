@@ -131,7 +131,7 @@ class RandomUserMapperTest {
     @Test
     fun `GIVEN User dob from the API WHEN parsing to DOMAIN model THEN valid`() {
         val dob = "1982-10-31T19:30:32.813Z"
-        val date = LocalDateTime.parse(dob, DateTimeFormatter.ofPattern(DobDTO.birthDateFormat))
+        val date = LocalDateTime.parse(dob, DateTimeFormatter.ofPattern(DobDTO.BIRTH_DATE_FORMAT))
         val userDTO = getUserDTO(date = dob)
         val users = getMapperResult(apiMapper.map(getRandomUser(userDTO))) { "$it: $userDTO" }
 

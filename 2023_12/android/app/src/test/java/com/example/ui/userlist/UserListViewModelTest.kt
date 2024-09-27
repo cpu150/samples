@@ -1,4 +1,4 @@
-package com.example.ui.main
+package com.example.ui.userlist
 
 import com.example.data.api.randomuser.UserTestUtility.DEFAULT_TITLE
 import com.example.data.api.randomuser.UserTestUtility.getDomainUser
@@ -6,10 +6,10 @@ import com.example.domain.model.User
 import com.example.domain.model.UserTitle
 import com.example.domain.state.LocalRequestState
 import com.example.domain.state.RemoteRequestState
-import com.example.ui.ScreenState
 import com.example.domain.user.GetRandomUsersUseCase
 import com.example.domain.user.LoadLocalUsersUseCase
 import com.example.domain.user.SaveUserUseCase
+import com.example.ui.ScreenState
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -34,7 +35,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class MainViewModelTest {
+class UserListViewModelTest {
 
     @get:Rule
     val mockkRule = MockKRule(this)
@@ -51,7 +52,7 @@ class MainViewModelTest {
     @MockK
     private val loadLocalUsersUseCase = mockk<LoadLocalUsersUseCase>()
 
-    private fun getNewMainViewModel() = MainViewModelImpl(
+    private fun getNewMainViewModel() = UserListViewModelImpl(
         getRandomUsersUseCase = getRandomUsersUseCase,
         saveUserUseCase = saveUserUseCase,
         loadLocalUsersUseCase = loadLocalUsersUseCase,
@@ -66,9 +67,9 @@ class MainViewModelTest {
         testScope.advanceUntilIdle()
 
         val state = viewModel.state.firstOrNull()
-        assert(state is ScreenState.View) { "View != $state" }
+        assert(state?.screenState == ScreenState.Loaded) { "Loaded != $state" }
 
-        val stateUser = (state as ScreenState.View).state.remoteRandomUsers.firstOrNull()
+        val stateUser = state?.remoteRandomUsers?.firstOrNull()
         assert(stateUser == user) { "$stateUser != $user" }
     }
 
@@ -117,19 +118,20 @@ class MainViewModelTest {
     fun `GIVEN MainViewModel WHEN initialising THEN Initialising, Loading and View states`() =
         runTest(scheduler) {
             val viewModel = getNewMainViewModel()
-            var state = viewModel.state.firstOrNull()
-            assert(state is ScreenState.Initializing) { "Initializing != $state" }
+
+            var state = viewModel.state.first()
+            assert(state.screenState == ScreenState.Initializing) { "Initializing != $state" }
 
             yield()
 
-            state = viewModel.state.firstOrNull()
-            assert(state is ScreenState.Loading) { "Loading != $state" }
+            state = viewModel.state.first()
+            assert(state.screenState == ScreenState.Loading()) { "Loading != $state" }
 
             advanceUntilIdle()
 
-            state = viewModel.state.firstOrNull()
-            assert(state is ScreenState.View) { "View != $state" }
-            val stateUser = (state as ScreenState.View).state.remoteRandomUsers.firstOrNull()
+            state = viewModel.state.first()
+            assert(state.screenState == ScreenState.Loaded) { "Loaded != $state" }
+            val stateUser = state.remoteRandomUsers.firstOrNull()
             assert(stateUser == user) { "$stateUser != $user" }
         }
 
@@ -139,7 +141,7 @@ class MainViewModelTest {
         runTest(scheduler) {
             val viewModel = getInitialisedViewModel(this)
 
-            val state = viewModel.state.firstOrNull() as ScreenState.View
+            val state = viewModel.state.first()
             val user2 = getDomainUser()
             val errorStr = "Error MainViewModelTest"
 
@@ -152,8 +154,8 @@ class MainViewModelTest {
             viewModel.fetchRandomUsers(10)
             advanceUntilIdle()
 
-            var stateUser = state.state.remoteRandomUsers.firstOrNull()
-            var stateErrorMsg = state.state.randomUsersError
+            var stateUser = state.remoteRandomUsers.firstOrNull()
+            var stateErrorMsg = state.randomUsersError
             assert(stateUser == user) { "$stateUser != $user" }
             assert(stateErrorMsg == errorStr) { "$stateErrorMsg != $errorStr" }
 
@@ -163,8 +165,8 @@ class MainViewModelTest {
             viewModel.fetchRandomUsers(10)
             advanceUntilIdle()
 
-            stateUser = state.state.remoteRandomUsers.firstOrNull()
-            stateErrorMsg = state.state.randomUsersError
+            stateUser = state.remoteRandomUsers.firstOrNull()
+            stateErrorMsg = state.randomUsersError
             assert(stateUser == user2) { "$stateUser != $user2" }
             assert(stateErrorMsg == null) { "$stateErrorMsg != null" }
         }
@@ -175,7 +177,7 @@ class MainViewModelTest {
         runTest(scheduler) {
             val viewModel = getInitialisedViewModel(this)
 
-            val state = viewModel.state.firstOrNull() as ScreenState.View
+            val state = viewModel.state.first()
             val user2 = getDomainUser()
             val errorStr = "Error MainViewModelTest"
             every { runBlocking { getRandomUsersUseCase.fetch(any()) } } returns
@@ -184,8 +186,8 @@ class MainViewModelTest {
             viewModel.saveUser(user2)
             advanceUntilIdle()
 
-            var stateUser = state.state.localUsers.firstOrNull()
-            var stateError = state.state.saveUsersError
+            var stateUser = state.localUsers.firstOrNull()
+            var stateError = state.saveUsersError
             assert(stateUser == user2) { "$stateUser != $user2" }
             assert(stateError == null) { "$stateError != null" }
 
@@ -194,8 +196,8 @@ class MainViewModelTest {
             viewModel.saveUser(user)
             advanceUntilIdle()
 
-            stateUser = state.state.localUsers.firstOrNull()
-            stateError = state.state.saveUsersError
+            stateUser = state.localUsers.firstOrNull()
+            stateError = state.saveUsersError
             // Users list must not change
             assert(stateUser == user2) { "$stateUser != $user2" }
             assert(stateError == errorStr) { "$stateError != null" }

@@ -1,22 +1,29 @@
 package com.example.domain.model
 
-import com.example.common.toURL
+import android.os.Parcelable
+import com.example.common.LocalDateTimeSerializer
+import com.example.common.URLSerializer
+import com.example.common.toUri
 import com.example.data.storage.user.model.UserEntity
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import java.net.URL
 import java.time.LocalDateTime
 
+@Serializable
+@Parcelize
 data class User(
     val title: UserTitle,
     val firstName: String,
     val lastName: String,
     val gender: UserGender,
     val email: String?,
-    val birthDate: LocalDateTime?,
+    @Serializable(with = LocalDateTimeSerializer::class) val birthDate: LocalDateTime?,
     val age: Int?,
-    val picLargeUrl: URL?,
-    val picMediumUrl: URL?,
-    val picSmallUrl: URL?,
-) {
+    @Serializable(with = URLSerializer::class) val picLargeUrl: URL?,
+    @Serializable(with = URLSerializer::class) val picMediumUrl: URL?,
+    @Serializable(with = URLSerializer::class) val picSmallUrl: URL?,
+) : Parcelable {
 
     override fun toString() = """
     |User {
@@ -46,9 +53,9 @@ data class User(
             email == user.email &&
             birthDate == user.birthDate &&
             age == user.age &&
-            picLargeUrl == user.picLargeUrl &&
-            picMediumUrl == user.picMediumUrl &&
-            picSmallUrl == user.picSmallUrl
+            picLargeUrl?.toUri() == user.picLargeUrl?.toUri() &&
+            picMediumUrl?.toUri() == user.picMediumUrl?.toUri() &&
+            picSmallUrl?.toUri() == user.picSmallUrl?.toUri()
 
     private fun equals(user: UserEntity) = title == UserTitle.fromEntity(user.title) &&
             firstName == user.firstName &&
@@ -57,9 +64,9 @@ data class User(
             email == user.email &&
             birthDate == user.birthDate &&
             age == user.age &&
-            picLargeUrl == user.picLargeUrl?.toURL() &&
-            picMediumUrl == user.picMediumUrl?.toURL() &&
-            picSmallUrl == user.picSmallUrl?.toURL()
+            picLargeUrl?.toUri() == user.picLargeUrl?.toUri() &&
+            picMediumUrl?.toUri() == user.picMediumUrl?.toUri() &&
+            picSmallUrl?.toUri() == user.picSmallUrl?.toUri()
 
     override fun hashCode(): Int {
         var result = title.hashCode()
@@ -69,9 +76,9 @@ data class User(
         result = 31 * result + (email?.hashCode() ?: 0)
         result = 31 * result + (birthDate?.hashCode() ?: 0)
         result = 31 * result + (age ?: 0)
-        result = 31 * result + (picLargeUrl?.hashCode() ?: 0)
-        result = 31 * result + (picMediumUrl?.hashCode() ?: 0)
-        result = 31 * result + (picSmallUrl?.hashCode() ?: 0)
+        result = 31 * result + picLargeUrl?.toUri().hashCode()
+        result = 31 * result + picMediumUrl?.toUri().hashCode()
+        result = 31 * result + picSmallUrl?.toUri().hashCode()
         return result
     }
 }

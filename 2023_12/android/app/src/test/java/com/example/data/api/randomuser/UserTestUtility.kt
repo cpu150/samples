@@ -29,7 +29,7 @@ object UserTestUtility {
     val DEFAULT_GENDER = UserGender.UNKNOWN
     const val DEFAULT_GENDER_STR = "gender"
     const val DEFAULT_DOB_STR = "1963-10-25T13:56:32.813Z"
-    val DEFAULT_DOB_DATE = DEFAULT_DOB_STR.toDateTime(DobDTO.birthDateFormat)
+    val DEFAULT_DOB_DATE = DEFAULT_DOB_STR.toDateTime(DobDTO.BIRTH_DATE_FORMAT)
     const val DEFAULT_AGE = 30
 
     fun <T> getMapperResult(

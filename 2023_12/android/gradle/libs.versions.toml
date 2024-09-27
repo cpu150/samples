@@ -51,6 +51,7 @@ test-junit-android = "1.2.1"
 test-ui-espresso = "3.6.1"
 junitKtx = "1.2.1"
 mockk = "1.13.9"
+kotlin-parcelize = "2.0.20"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
@@ -113,3 +114,4 @@ kps = { id = "com.google.devtools.ksp", version.ref = "kps" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 androidx-room = { id = "androidx.room", version.ref = "androidx-room" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin-parcelize" }
