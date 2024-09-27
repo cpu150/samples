@@ -13,8 +13,6 @@ import com.example.domain.user.LoadLocalUsersUseCase
 import com.example.domain.user.SaveUserUseCase
 import com.example.ui.ScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -33,22 +31,21 @@ class MainViewModelImpl @Inject constructor(
     override val state: StateFlow<MainState> = _state
 
     init {
-        _state.update { it.copy(screenState = ScreenState.Loading(0f)) }
+        _state.update { it.copy(screenState = ScreenState.Loading()) }
+
+        viewModelScope.launch { collectLocalUsers() }
+
         viewModelScope.launch {
-            launch { collectLocalUsers() }
-
             suspendedFetchRandomUsers(10)
-
             _state.update { it.copy(screenState = ScreenState.Loaded) }
         }
     }
 
     private suspend fun collectLocalUsers() {
         loadLocalUsersUseCase.all().collect { result ->
-            handleLocalUserError(result) { errorMsg ->
-                _state.update { it.copy(localUsersError = errorMsg) }
-            }.takeIf { isAnError -> isAnError.not() }
-                ?.also { _ ->
+            handleLocalUserError(
+                result,
+                onSuccess = {
                     when (result) {
                         is LocalRequestState.Create -> result.data
                         is LocalRequestState.Read -> result.data
@@ -58,7 +55,9 @@ class MainViewModelImpl @Inject constructor(
                     }?.also { users ->
                         _state.update { it.copy(localUsers = users) }
                     }
-                }
+                },
+                onError = { errorMsg -> _state.update { it.copy(localUsersError = errorMsg) } }
+            )
         }
     }
 
@@ -101,7 +100,8 @@ class MainViewModelImpl @Inject constructor(
 
     private fun handleLocalUserError(
         result: LocalRequestState<Any>,
-        handleError: (errorMsg: String?) -> Unit,
+        onSuccess: (() -> Unit)? = null,
+        onError: (errorMsg: String?) -> Unit,
     ) = "Unknown error".let { defaultErrorMsg ->
         when (result) {
             is LocalRequestState.ErrorCreate -> result.e?.message ?: defaultErrorMsg
@@ -112,6 +112,6 @@ class MainViewModelImpl @Inject constructor(
             is LocalRequestState.Read,
             is LocalRequestState.Update,
             is LocalRequestState.Delete -> null
-        }.also { errorMsg -> handleError(errorMsg) }
+        }.also { errorMsg -> onError(errorMsg) } ?: onSuccess?.invoke()
     } != null
 }
