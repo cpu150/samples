@@ -126,7 +126,10 @@ fun UserItem(user: User, onUserClick: (user: User) -> Unit = {}) {
                         .fillMaxSize()
                         .padding(horizontal = 4.dp),
                 ) {
-                    Text("${title.name}. $firstName $lastName", fontSize = 12.sp)
+                    Text(
+                        "${title.getString(LocalContext.current)} $firstName $lastName".trim(),
+                        fontSize = 12.sp
+                    )
                     Text("email: $email", fontSize = 12.sp)
                 }
             }

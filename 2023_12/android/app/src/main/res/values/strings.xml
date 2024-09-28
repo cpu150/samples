@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">no name</string>
+    <string name="user_title_unknown" />
+    <string name="user_title_ms">Ms.</string>
+    <string name="user_title_miss">Miss.</string>
+    <string name="user_title_mr">Mr.</string>
+    <string name="user_title_mrs">Mrs.</string>
 </resources>
