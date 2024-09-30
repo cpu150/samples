@@ -16,6 +16,7 @@ import com.example.ui.nav.Ex2023Screens
 import com.example.ui.nav.UserDetailsScreen
 import com.example.ui.nav.UserListScreen
 import com.example.ui.theme.Ex2023Theme
+import com.example.ui.userdetails.UserDetailsScreenRoot
 import com.example.ui.userlist.UserListRootScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.json.Json
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
                             @Composable
                             override fun LoadUserDetailsScreen() {
-                                TODO("Not yet implemented")
+                                UserDetailsScreenRoot(Modifier.padding(innerPadding))
                             }
                         },
                     )

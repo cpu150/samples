@@ -1,34 +1,23 @@
 package com.example.ui.userlist
 
+import com.example.MainCoroutineRule
 import com.example.data.api.randomuser.UserTestUtility.DEFAULT_TITLE
 import com.example.data.api.randomuser.UserTestUtility.getDomainUser
-import com.example.domain.model.User
 import com.example.domain.model.UserTitle
-import com.example.domain.state.LocalRequestState
 import com.example.domain.state.RemoteRequestState
 import com.example.domain.user.GetRandomUsersUseCase
-import com.example.domain.user.LoadLocalUsersUseCase
-import com.example.domain.user.SaveUserUseCase
 import com.example.ui.ScreenState
-import io.mockk.every
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit4.MockKRule
-import io.mockk.mockk
 import io.mockk.unmockkAll
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.yield
 import org.junit.After
 import org.junit.Before
@@ -37,77 +26,49 @@ import org.junit.Test
 
 class UserListViewModelTest {
 
+    @ExperimentalCoroutinesApi
     @get:Rule
-    val mockkRule = MockKRule(this)
-
-    private val scheduler = TestCoroutineScheduler()
-    private val dispatcher = StandardTestDispatcher(scheduler, "MainViewModelTest")
+    val mainCoroutineRule = MainCoroutineRule()
 
     @MockK
-    private val getRandomUsersUseCase = mockk<GetRandomUsersUseCase>()
+    lateinit var randomUsersUseCase: GetRandomUsersUseCase
 
-    @MockK
-    private val saveUserUseCase = mockk<SaveUserUseCase>()
-
-    @MockK
-    private val loadLocalUsersUseCase = mockk<LoadLocalUsersUseCase>()
-
-    private fun getNewMainViewModel() = UserListViewModelImpl(
-        getRandomUsersUseCase = getRandomUsersUseCase,
-        saveUserUseCase = saveUserUseCase,
-        loadLocalUsersUseCase = loadLocalUsersUseCase,
+    @ExperimentalCoroutinesApi
+    private fun getNewUserListViewModel() = UserListViewModelImpl(
+        getRandomUsersUseCase = randomUsersUseCase,
         logger = null,
     )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @ExperimentalCoroutinesApi
     private suspend fun getInitialisedViewModel(
         testScope: TestScope,
-    ) = getNewMainViewModel().also { viewModel ->
+    ) = getNewUserListViewModel().also { viewModel ->
         // Wait until initialisation is done
         testScope.advanceUntilIdle()
 
-        val state = viewModel.state.firstOrNull()
-        assert(state?.screenState == ScreenState.Loaded) { "Loaded != $state" }
+        val state = viewModel.state.first()
+        assert(state.screenState == ScreenState.Loaded) { "Loaded != $state" }
 
-        val stateUser = state?.remoteRandomUsers?.firstOrNull()
+        val stateUser = state.remoteRandomUsers.first()
         assert(stateUser == user) { "$stateUser != $user" }
     }
 
     private val user = getDomainUser(
         title = if (DEFAULT_TITLE != UserTitle.MISS) UserTitle.MISS else UserTitle.MRS,
-        firstName = "MainViewModelTest",
-        lastName = "MainViewModelTest",
+        firstName = "UserListViewModelTest",
+        lastName = "UserListViewModelTest",
     )
 
-    private val localUsersFlow =
-        MutableStateFlow<LocalRequestState<List<User>>>(LocalRequestState.Read(listOf(user)))
-
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @ExperimentalCoroutinesApi
     @Before
     fun setUp() {
-        Dispatchers.setMain(dispatcher)
+        MockKAnnotations.init(this)
 
-        every { runBlocking { loadLocalUsersUseCase.all() } } returns localUsersFlow
-
-        every { runBlocking { getRandomUsersUseCase.fetch(any()) } } returns
-                RemoteRequestState.Success(listOf(user))
-
-        every { runBlocking { saveUserUseCase.save(user) } } returns LocalRequestState.Update(user)
-            .also { runBlocking { localUsersFlow.emit(LocalRequestState.Read(listOf(user))) } }
-
-        every { runBlocking { saveUserUseCase.save(nrefEq(user)) } } answers {
-            val newUser = args[0] as User
-            LocalRequestState.Create(newUser).also {
-                runBlocking { localUsersFlow.emit(LocalRequestState.Read(listOf(newUser))) }
-            }
-        }
+        coEvery { randomUsersUseCase.fetch(any()) } returns RemoteRequestState.Success(listOf(user))
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @After
     fun tearDown() {
-        Dispatchers.resetMain()
-        dispatcher.cancel()
         unmockkAll()
     }
 
@@ -115,91 +76,63 @@ class UserListViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `GIVEN MainViewModel WHEN initialising THEN Initialising, Loading and View states`() =
-        runTest(scheduler) {
-            val viewModel = getNewMainViewModel()
-
-            var state = viewModel.state.first()
-            assert(state.screenState == ScreenState.Initializing) { "Initializing != $state" }
-
-            yield()
-
-            state = viewModel.state.first()
-            assert(state.screenState == ScreenState.Loading()) { "Loading != $state" }
-
-            advanceUntilIdle()
-
-            state = viewModel.state.first()
-            assert(state.screenState == ScreenState.Loaded) { "Loaded != $state" }
-            val stateUser = state.remoteRandomUsers.firstOrNull()
-            assert(stateUser == user) { "$stateUser != $user" }
+    fun GIVEN_MainViewModel_WHEN_initialising_THEN_Initialising_Loading_and_Loaded() = runTest {
+        // Called by `init` while loading. Call `advanceTimeBy()` to be able to test the `state`
+        // while loading
+        coEvery { randomUsersUseCase.fetch(any()) } answers {
+            runBlocking { mainCoroutineRule.advanceTimeBy(1L) }
+            RemoteRequestState.Success(listOf(user))
         }
+
+        val viewModel = getNewUserListViewModel()
+        val state = viewModel.state
+        var screenState = state.value.screenState
+        assert(screenState == ScreenState.Initializing) { "Initializing != $screenState" }
+
+        yield()
+
+        screenState = state.value.screenState
+        assert(screenState == ScreenState.Loading()) { "Loading != $screenState" }
+
+        advanceTimeBy(1L)
+        yield()
+
+        screenState = state.first().screenState
+        assert(screenState == ScreenState.Loaded) { "Loaded != $screenState" }
+        val stateUser = state.value.remoteRandomUsers.first()
+        assert(stateUser == user) { "$stateUser != $user" }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `GIVEN MainViewModel WHEN fetching users THEN get users if Success or get Error`() =
-        runTest(scheduler) {
-            val viewModel = getInitialisedViewModel(this)
+    fun GIVEN_MainViewModel_WHEN_fetching_users_THEN_get_users_if_Success_or_get_Error() = runTest {
+        val viewModel = getNewUserListViewModel()
+        val user2 = getDomainUser()
+        val errorStr = "Error MainViewModelTest"
 
-            val state = viewModel.state.first()
-            val user2 = getDomainUser()
-            val errorStr = "Error MainViewModelTest"
+        // Error while fetching users
+        coEvery { randomUsersUseCase.fetch(any()) } returns RemoteRequestState.Error(
+            reason = RemoteRequestState.ReasonCode.BODY_NULL,
+            msg = errorStr,
+        )
+        viewModel.fetchUsers(10)
+        advanceUntilIdle()
 
-            // Error
-            every { runBlocking { getRandomUsersUseCase.fetch(any()) } } returns
-                    RemoteRequestState.Error(
-                        reason = RemoteRequestState.ReasonCode.BODY_NULL,
-                        msg = errorStr,
-                    )
-            viewModel.fetchRandomUsers(10)
-            advanceUntilIdle()
+        var state = viewModel.state.first()
+        val emptyUserList = state.remoteRandomUsers.isEmpty()
+        var stateErrorMsg = state.randomUsersError
+        assert(emptyUserList) { "$emptyUserList list should be empty when returns an error" }
+        assert(stateErrorMsg == errorStr) { "$stateErrorMsg != $errorStr" }
 
-            var stateUser = state.remoteRandomUsers.firstOrNull()
-            var stateErrorMsg = state.randomUsersError
-            assert(stateUser == user) { "$stateUser != $user" }
-            assert(stateErrorMsg == errorStr) { "$stateErrorMsg != $errorStr" }
+        // Success while fetching users
+        coEvery { randomUsersUseCase.fetch(any()) } returns RemoteRequestState.Success(listOf(user2))
+        viewModel.fetchUsers(10)
+        advanceUntilIdle()
 
-            // Success
-            every { runBlocking { getRandomUsersUseCase.fetch(any()) } } returns
-                    RemoteRequestState.Success(listOf(user2))
-            viewModel.fetchRandomUsers(10)
-            advanceUntilIdle()
-
-            stateUser = state.remoteRandomUsers.firstOrNull()
-            stateErrorMsg = state.randomUsersError
-            assert(stateUser == user2) { "$stateUser != $user2" }
-            assert(stateErrorMsg == null) { "$stateErrorMsg != null" }
-        }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `GIVEN MainViewModel WHEN saving user THEN get Success or Error accordingly`() =
-        runTest(scheduler) {
-            val viewModel = getInitialisedViewModel(this)
-
-            val state = viewModel.state.first()
-            val user2 = getDomainUser()
-            val errorStr = "Error MainViewModelTest"
-            every { runBlocking { getRandomUsersUseCase.fetch(any()) } } returns
-                    RemoteRequestState.Success(listOf(user2))
-
-            viewModel.saveUser(user2)
-            advanceUntilIdle()
-
-            var stateUser = state.localUsers.firstOrNull()
-            var stateError = state.saveUsersError
-            assert(stateUser == user2) { "$stateUser != $user2" }
-            assert(stateError == null) { "$stateError != null" }
-
-            every { runBlocking { saveUserUseCase.save(user) } } returns
-                    LocalRequestState.ErrorUpdate(user, Exception(errorStr))
-            viewModel.saveUser(user)
-            advanceUntilIdle()
-
-            stateUser = state.localUsers.firstOrNull()
-            stateError = state.saveUsersError
-            // Users list must not change
-            assert(stateUser == user2) { "$stateUser != $user2" }
-            assert(stateError == errorStr) { "$stateError != null" }
-        }
+        state = viewModel.state.first()
+        val stateUser = state.remoteRandomUsers.first()
+        stateErrorMsg = state.randomUsersError
+        assert(stateUser == user2) { "$stateUser != $user2" }
+        assert(stateErrorMsg == null) { "$stateErrorMsg != null" }
+    }
 }

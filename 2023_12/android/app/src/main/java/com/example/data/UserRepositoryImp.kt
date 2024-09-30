@@ -73,6 +73,30 @@ class UserRepositoryImp @Inject constructor(
         }
     }
 
+    override suspend fun deleteLocalUser(user: User): LocalRequestState<User> = withContext(ioDispatcher) {
+        user.run { userDAO.get(title.entityValue, firstName, lastName) == null }.let { notExists ->
+            val debugMsg = "UserRepositoryImp - deleteLocalUser - Error DELETING"
+            try {
+                if (notExists) {
+                    logger?.e("$debugMsg no user saved: $user")
+                    LocalRequestState.ErrorDelete(user)
+                } else {
+                    val nbUserDeleted = userDAO.delete(user.map())
+                    if (nbUserDeleted == 1) {
+                        LocalRequestState.Delete(user)
+                    } else {
+                        logger?.e("$debugMsg wrong number of user deleted ($nbUserDeleted) $user")
+                        LocalRequestState.ErrorDelete(user)
+                    }
+                }
+            } catch (e: Exception) {
+                ensureActive()
+                logger?.e("$debugMsg $user", e)
+                LocalRequestState.ErrorDelete(user, e)
+            }
+        }
+    }
+
     override suspend fun getLocalUsers(logger: Logger?) = withContext(ioDispatcher) {
         try {
             userDAO.getAll().map { userEntities ->

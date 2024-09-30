@@ -7,7 +7,4 @@ data class UserListScreenState(
     val screenState: ScreenState = ScreenState.Initializing,
     val remoteRandomUsers: List<User> = emptyList(),
     val randomUsersError: String? = null,
-    val localUsers: List<User> = emptyList(),
-    val localUsersError: String? = null,
-    val saveUsersError: String? = null,
 )

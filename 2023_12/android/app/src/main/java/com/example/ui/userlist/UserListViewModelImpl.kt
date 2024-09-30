@@ -3,14 +3,10 @@ package com.example.ui.userlist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.Logger
-import com.example.domain.model.User
-import com.example.domain.state.LocalRequestState
 import com.example.domain.state.RemoteRequestState.Empty
 import com.example.domain.state.RemoteRequestState.Error
 import com.example.domain.state.RemoteRequestState.Success
 import com.example.domain.user.GetRandomUsersUseCase
-import com.example.domain.user.LoadLocalUsersUseCase
-import com.example.domain.user.SaveUserUseCase
 import com.example.ui.ScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +18,6 @@ import javax.inject.Inject
 @HiltViewModel
 class UserListViewModelImpl @Inject constructor(
     private val getRandomUsersUseCase: GetRandomUsersUseCase,
-    private val saveUserUseCase: SaveUserUseCase,
-    private val loadLocalUsersUseCase: LoadLocalUsersUseCase,
     private val logger: Logger?,
 ) : ViewModel(), UserListViewModel {
 
@@ -33,31 +27,8 @@ class UserListViewModelImpl @Inject constructor(
     init {
         viewModelScope.launch {
             _state.update { it.copy(screenState = ScreenState.Loading()) }
-
-            launch { collectLocalUsers() }
-
-            suspendedFetchRandomUsers(100)
+            fetchRandomUsers(100)
             _state.update { it.copy(screenState = ScreenState.Loaded) }
-        }
-    }
-
-    private suspend fun collectLocalUsers() {
-        loadLocalUsersUseCase.all().collect { result ->
-            handleLocalUserError(
-                result,
-                onSuccess = {
-                    when (result) {
-                        is LocalRequestState.Create -> result.data
-                        is LocalRequestState.Read -> result.data
-                        is LocalRequestState.Update -> result.data
-                        is LocalRequestState.Delete -> result.data
-                        else -> null
-                    }?.also { users ->
-                        _state.update { it.copy(localUsers = users) }
-                    }
-                },
-                onError = { errorMsg -> _state.update { it.copy(localUsersError = errorMsg) } }
-            )
         }
     }
 
@@ -67,11 +38,11 @@ class UserListViewModelImpl @Inject constructor(
         result.msg
     } ?: "Error code: ${result.reason.name}"
 
-    override fun fetchRandomUsers(nbUsers: Int) {
-        viewModelScope.launch { suspendedFetchRandomUsers(nbUsers) }
+    override fun fetchUsers(nbUsers: Int) {
+        viewModelScope.launch { fetchRandomUsers(nbUsers) }
     }
 
-    private suspend fun suspendedFetchRandomUsers(nbUsers: Int) {
+    private suspend fun fetchRandomUsers(nbUsers: Int) {
         var randomUsersError: String? = null
         var remoteRandomUsers = _state.value.remoteRandomUsers
 
@@ -83,35 +54,7 @@ class UserListViewModelImpl @Inject constructor(
         }
 
         _state.update {
-            it.copy(
-                randomUsersError = randomUsersError,
-                remoteRandomUsers = remoteRandomUsers
-            )
+            it.copy(remoteRandomUsers = remoteRandomUsers, randomUsersError = randomUsersError)
         }
     }
-
-    override fun saveUser(user: User) {
-        viewModelScope.launch {
-            handleLocalUserError(saveUserUseCase.save(user)) { errorMsg ->
-                _state.update { it.copy(saveUsersError = errorMsg) }
-            }
-        }
-    }
-
-    private fun handleLocalUserError(
-        result: LocalRequestState<Any>,
-        onSuccess: (() -> Unit)? = null,
-        onError: (errorMsg: String?) -> Unit,
-    ) = "Unknown error".let { defaultErrorMsg ->
-        when (result) {
-            is LocalRequestState.ErrorCreate -> result.e?.message ?: defaultErrorMsg
-            is LocalRequestState.ErrorRead -> result.e?.message ?: defaultErrorMsg
-            is LocalRequestState.ErrorUpdate -> result.e?.message ?: defaultErrorMsg
-            is LocalRequestState.ErrorDelete -> result.e?.message ?: defaultErrorMsg
-            is LocalRequestState.Create,
-            is LocalRequestState.Read,
-            is LocalRequestState.Update,
-            is LocalRequestState.Delete -> null
-        }.also { errorMsg -> onError(errorMsg) } ?: onSuccess?.invoke()
-    } != null
 }

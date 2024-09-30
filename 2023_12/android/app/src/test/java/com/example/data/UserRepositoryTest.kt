@@ -8,10 +8,12 @@ import com.example.data.api.randomuser.UserTestUtility.getRandomUser
 import com.example.data.api.randomuser.UserTestUtility.getRoomUser
 import com.example.data.api.randomuser.UserTestUtility.getUserDTO
 import com.example.data.storage.user.UserDAO
+import com.example.data.storage.user.map
 import com.example.domain.model.UserTitle
 import com.example.domain.state.LocalRequestState
 import com.example.domain.state.RemoteRequestState
 import com.example.domain.user.UserRepository
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
@@ -20,7 +22,6 @@ import io.mockk.unmockkAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
@@ -75,8 +76,7 @@ class UserRepositoryTest {
 
     @Before
     fun setUp() {
-        every { runBlocking { randomUserApi.getRandomUsers(any()) } } returns
-                Response.success(apiUsers)
+        coEvery { randomUserApi.getRandomUsers(any()) } returns Response.success(apiUsers)
 
         every { randomUserMapper.map(apiUsers, any()) } returns
                 RemoteRequestState.Success(listOf(userSaved))
@@ -84,6 +84,7 @@ class UserRepositoryTest {
         every { userDAO.add(any()) } returns 1
         every { userDAO.addAll(any()) } returns listOf(1)
         every { userDAO.getAll() } returns flowOf(listOf(userEntitySaved))
+        every { userDAO.delete(userSaved.map()) } returns 1
 
         every { with(userSaved) { userDAO.get(title.entityValue, firstName, lastName) } } returns
                 userEntitySaved
@@ -147,5 +148,24 @@ class UserRepositoryTest {
         assert(result is LocalRequestState.Read) { "getLocalUsers Read FAILED: $result" }
         val resultUser = (result as LocalRequestState.Read).data.first()
         assert(resultUser == userSaved) { "getLocalUsers Rea FAILED: $resultUser != $userSaved" }
+    }
+
+    @Test
+    fun `GIVEN user saved WHEN deleting THEN success`() = runTest(scheduler) {
+        val result = repository.deleteLocalUser(userSaved)
+
+        assert(result is LocalRequestState.Delete) { "deleteLocalUser Delete FAILED: $result" }
+        val resultUser = (result as LocalRequestState.Delete).data
+        assert(resultUser == userSaved) { "deleteLocalUser Delete FAILED: $resultUser != $userSaved" }
+    }
+
+    @Test
+    fun `GIVEN user not saved WHEN deleting THEN error`() = runTest(scheduler) {
+        val userNotSaved = getDomainUser()
+        val result = repository.deleteLocalUser(userNotSaved)
+
+        assert(result is LocalRequestState.ErrorDelete) { "deleteLocalUser Delete FAILED: $result" }
+        val resultUser = (result as LocalRequestState.ErrorDelete).data
+        assert(resultUser == userNotSaved) { "deleteLocalUser Delete FAILED: $resultUser != $userNotSaved" }
     }
 }

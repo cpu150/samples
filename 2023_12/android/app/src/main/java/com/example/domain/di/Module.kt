@@ -1,6 +1,8 @@
 package com.example.domain.di
 
 import com.example.data.UserRepositoryImp
+import com.example.domain.user.DeleteLocalUserUseCase
+import com.example.domain.user.DeleteLocalUserUseCaseImp
 import com.example.domain.user.GetRandomUsersUseCase
 import com.example.domain.user.GetRandomUsersUseCaseImp
 import com.example.domain.user.LoadLocalUsersUseCase
@@ -31,6 +33,11 @@ object Module {
     @Provides
     @Singleton
     fun provideSaveUserUseCase(useCase: SaveUserUseCaseImp): SaveUserUseCase = useCase
+
+    @Provides
+    @Singleton
+    fun provideDeleteUserUseCase(useCase: DeleteLocalUserUseCaseImp): DeleteLocalUserUseCase =
+        useCase
 
     @Provides
     @Singleton
