@@ -8,6 +8,7 @@ import com.example.domain.state.LocalRequestState
 import com.example.domain.user.DeleteLocalUserUseCase
 import com.example.domain.user.LoadLocalUsersUseCase
 import com.example.domain.user.SaveUserUseCase
+import com.example.ui.nav.NavArgParser
 import com.example.ui.nav.UserDetailsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,9 +26,10 @@ class UserDetailsViewModelImp @Inject constructor(
     private val logger: Logger?,
     json: Json,
     savedStateHandle: SavedStateHandle,
+    navArgParser: NavArgParser<UserDetailsScreen>,
 ) : UserDetailsViewModel, ViewModel() {
 
-    private val userDetailsScreen = UserDetailsScreen.from(savedStateHandle, json)
+    private val userDetailsScreen = navArgParser.from(savedStateHandle, json)
 
     private val _state = MutableStateFlow(UserDetailsScreenState(user = userDetailsScreen.user))
     override val state: StateFlow<UserDetailsScreenState> = _state
@@ -39,7 +41,7 @@ class UserDetailsViewModelImp @Inject constructor(
     private suspend fun collectLocalUsers() {
         loadLocalUsersUseCase.all().collect { result ->
             handleLocalUserError(
-                result,
+                result = result,
                 onSuccess = {
                     when (result) {
                         is LocalRequestState.Create -> result.data
@@ -48,7 +50,9 @@ class UserDetailsViewModelImp @Inject constructor(
                         is LocalRequestState.Delete -> result.data
                         else -> null
                     }?.also { users ->
-                        _state.update { it.copy(isUserSaved = users.contains(it.user)) }
+                        _state.update {
+                            it.copy(isUserSaved = users.contains(it.user), localUsersError = null)
+                        }
                     }
                 },
                 onError = { errorMsg -> _state.update { it.copy(localUsersError = errorMsg) } }
@@ -58,17 +62,21 @@ class UserDetailsViewModelImp @Inject constructor(
 
     override fun saveUser() {
         viewModelScope.launch {
-            handleLocalUserError(saveUserUseCase.save(_state.value.user)) { errorMsg ->
-                _state.update { it.copy(saveUsersError = errorMsg) }
-            }
+            handleLocalUserError(
+                result = saveUserUseCase.save(_state.value.user),
+                onSuccess = { _state.update { it.copy(saveUsersError = null) } },
+                onError = { errorMsg -> _state.update { it.copy(saveUsersError = errorMsg) } }
+            )
         }
     }
 
     override fun deleteUser() {
         viewModelScope.launch {
-            handleLocalUserError(deleteLocalUserUseCase.delete(_state.value.user)) { errorMsg ->
-                _state.update { it.copy(deleteUsersError = errorMsg) }
-            }
+            handleLocalUserError(
+                result = deleteLocalUserUseCase.delete(_state.value.user),
+                onSuccess = { _state.update { it.copy(deleteUsersError = null) } },
+                onError = { errorMsg -> _state.update { it.copy(deleteUsersError = errorMsg) } }
+            )
         }
     }
 

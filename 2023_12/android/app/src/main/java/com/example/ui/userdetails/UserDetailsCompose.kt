@@ -19,7 +19,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -88,11 +87,8 @@ fun UserDetailsScreenRoot(
                     text = "${title.getString(LocalContext.current)}  $firstName $lastName".trim(),
                     fontSize = 24.sp,
                 )
-                var cpt = remember { 0 }
-                while (cpt++ < 30) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "$email")
-                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "$email")
             }
         }
         Button(

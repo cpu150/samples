@@ -14,7 +14,6 @@ import io.mockk.unmockkAll
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -24,6 +23,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@Suppress("TestFunctionName")
 class UserListViewModelTest {
 
     @ExperimentalCoroutinesApi
@@ -38,20 +38,6 @@ class UserListViewModelTest {
         getRandomUsersUseCase = randomUsersUseCase,
         logger = null,
     )
-
-    @ExperimentalCoroutinesApi
-    private suspend fun getInitialisedViewModel(
-        testScope: TestScope,
-    ) = getNewUserListViewModel().also { viewModel ->
-        // Wait until initialisation is done
-        testScope.advanceUntilIdle()
-
-        val state = viewModel.state.first()
-        assert(state.screenState == ScreenState.Loaded) { "Loaded != $state" }
-
-        val stateUser = state.remoteRandomUsers.first()
-        assert(stateUser == user) { "$stateUser != $user" }
-    }
 
     private val user = getDomainUser(
         title = if (DEFAULT_TITLE != UserTitle.MISS) UserTitle.MISS else UserTitle.MRS,

@@ -13,11 +13,11 @@ object UserListScreen
 @Serializable
 data class UserDetailsScreen(val user: User) {
 
-    companion object {
+    companion object : NavArgParser<UserDetailsScreen> {
         fun getTypeMap(json: Json = Json) =
             mapOf(typeOf<User>() to serializableType<User>(json = json))
 
-        fun from(savedStateHandle: SavedStateHandle, json: Json = Json) =
+        override fun from(savedStateHandle: SavedStateHandle, json: Json) =
             savedStateHandle.toRoute<UserDetailsScreen>(typeMap = getTypeMap(json))
     }
 }

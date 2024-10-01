@@ -3,9 +3,18 @@ package com.example.ui.nav
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavType
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
+interface NavArgParser<T> {
+    fun from(savedStateHandle: SavedStateHandle, json: Json = Json): T
+}
+
+// Encode '/' characters as it will be miss interpreted (as a separator) by the NavController
+fun fixUrlForNavigation(urlStr: String) = urlStr
+    .replace("/", "%2F")
 
 inline fun <reified T : Parcelable> parcelableType(
     isNullableAllowed: Boolean = false,
@@ -46,6 +55,3 @@ inline fun <reified T : Any> serializableType(
     override fun put(bundle: Bundle, key: String, value: T) =
         bundle.putString(key, json.encodeToString(value))
 }
-
-fun fixUrlForNavigation(urlStr: String) = urlStr
-    .replace("/", "%2F") // encode '/' characters as it will be miss interpreted

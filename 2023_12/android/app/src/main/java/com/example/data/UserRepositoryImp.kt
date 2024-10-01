@@ -73,7 +73,7 @@ class UserRepositoryImp @Inject constructor(
         }
     }
 
-    override suspend fun deleteLocalUser(user: User): LocalRequestState<User> = withContext(ioDispatcher) {
+    override suspend fun deleteLocalUser(user: User) = withContext(ioDispatcher) {
         user.run { userDAO.get(title.entityValue, firstName, lastName) == null }.let { notExists ->
             val debugMsg = "UserRepositoryImp - deleteLocalUser - Error DELETING"
             try {
