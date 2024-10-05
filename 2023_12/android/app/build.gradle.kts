@@ -231,9 +231,8 @@ dependencies {
 
     // Room
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
-    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx.extension)
+    ksp(libs.androidx.room.compiler)
 
     // Tests Room
     androidTestImplementation(libs.androidx.room.testing)

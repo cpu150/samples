@@ -27,7 +27,7 @@ kps = "2.0.20-1.0.25"
 composeCompiler = "1.5.7"
 ###
 
-gradle-plugin = "8.6.1"
+gradle-plugin = "8.7.0"
 androidx-core-ktx = "1.13.1"
 androidx-appcompat = "1.7.0"
 android-material = "1.12.0"
