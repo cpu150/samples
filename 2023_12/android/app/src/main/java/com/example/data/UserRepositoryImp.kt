@@ -34,7 +34,7 @@ class UserRepositoryImp @Inject constructor(
     private val randomUserMapper: RandomUserMapper,
     private val json: Json,
     private val logger: Logger?,
-    @Dispatcher(AppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @param:Dispatcher(AppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : UserRepository {
 
     override suspend fun fetchRemoteRandomUsers(numberOfUser: Int) = withContext(ioDispatcher) {
@@ -100,8 +100,7 @@ class UserRepositoryImp @Inject constructor(
     override suspend fun getLocalUsers(logger: Logger?) = withContext(ioDispatcher) {
         try {
             userDAO.getAll().map { userEntities ->
-                val users =
-                    userEntities?.map { userEntity -> userEntity.map(logger) } ?: emptyList()
+                val users = userEntities.map { userEntity -> userEntity.map(logger) }
                 LocalRequestState.Read(users)
             }
         } catch (e: Exception) {

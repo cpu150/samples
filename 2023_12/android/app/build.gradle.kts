@@ -1,4 +1,3 @@
-import java.io.ByteArrayOutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -15,31 +14,40 @@ plugins {
 
 val roomSchemaPath = "$projectDir/roomschemas"
 
-val runCommand: (project: Project, cmd: String) -> String = { project: Project, cmd: String ->
-    val byteOut = ByteArrayOutputStream()
-    project.exec {
-        commandLine = cmd.split(" ")
-        standardOutput = byteOut
+val runCommand: (cmd: String) -> String = { cmd: String ->
+    providers
+        .exec { commandLine = cmd.split(" ") }
+        .standardOutput.asText.get().trim()
+}
+
+/*
+ * https://developer.android.com/build/jdks#jdk-config-in-studio
+ * Increase -> Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JDK
+ * Android 14+ (compileSdk=34+) -> Java 17
+ */
+val javaVersion = JavaVersion.VERSION_17
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion.toString())
     }
-    String(byteOut.toByteArray()).trim()
 }
 
 android {
     val signingConfigName = "debug"
-    val gitBranch = runCommand(project, "git rev-parse --abbrev-ref HEAD")
+    val gitBranch = runCommand("git rev-parse --abbrev-ref HEAD")
         .takeIf { it.isNotBlank() } ?: "no_branch"
-    val gitTag = runCommand(project, "git tag -l --points-at HEAD")
+    val gitTag = runCommand("git tag -l --points-at HEAD")
         .takeIf { it.isNotBlank() } ?: "no_tag"
-    val gitHash = runCommand(project, "git rev-parse --short=8 HEAD")
+    val gitHash = runCommand("git rev-parse --short=8 HEAD")
         .takeIf { it.isNotBlank() } ?: "no_hash"
-    val gitRevCount = runCommand(project, "git rev-list --count HEAD").toIntOrNull() ?: -1
+    val gitRevCount = runCommand("git rev-list --count HEAD").toIntOrNull() ?: -1
     val prodProguardFiles = listOf(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro",
         "proguard-serializable-rules.pro",
         "proguard-retrofit-rules.pro",
         "proguard-room-rules.pro",
-    ).toTypedArray()
+    ).toTypedArray<Any>()
 
     namespace = "com.example.example2023"
     compileSdk = libs.versions.compileSdk.get().toInt()
@@ -135,20 +143,6 @@ android {
         }
     }
 
-    /*
-     * https://developer.android.com/build/jdks#jdk-config-in-studio
-     * Increase -> Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JDK
-     * Android 14 (compileSdk=34) -> Java 17
-     */
-    val javaVersion = JavaVersion.VERSION_17
-    compileOptions {
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-    }
-    kotlinOptions {
-        jvmTarget = javaVersion.toString()
-    }
-
     hilt {
         // When the project has several modules and not all included in 'app' module
         enableAggregatingTask = true
@@ -159,16 +153,11 @@ android {
         getByName("androidTest").assets.srcDir(roomSchemaPath)
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
-    }
-
     buildFeatures {
         buildConfig = true
         compose = true
     }
 
-    @Suppress("UnstableApiUsage")
     testOptions {
         animationsDisabled = true
         unitTests {

@@ -5,7 +5,7 @@ import androidx.annotation.StringRes
 import com.example.domain.Logger
 import com.example.example2023.R
 
-enum class UserTitle(val entityValue: String, @StringRes val stringRes: Int) {
+enum class UserTitle(val entityValue: String, @param:StringRes val stringRes: Int) {
     UNKNOWN("UNKNOWN", R.string.user_title_unknown),
     MS("Ms", R.string.user_title_ms),
     MISS("Miss", R.string.user_title_miss),

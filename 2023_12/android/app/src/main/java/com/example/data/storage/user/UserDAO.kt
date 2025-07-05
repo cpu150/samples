@@ -17,7 +17,7 @@ interface UserDAO {
         FROM $tableName
         """
     )
-    fun getAll(): Flow<List<UserEntity>?>
+    fun getAll(): Flow<List<UserEntity>>
 
     @Query(
         """
